@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Документооборот AI: OCR + LLM → 1С — Кейс — CHAOS VISION</title>
+<meta name="description" content="400+ документов в сутки на русском и китайском без ручного ввода. Точность распознавания — 99.5%.">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/main.css">
+</head>
+<body>
+<script src="../assets/js/components.js"></script>
+<script>renderNav('../');</script>
+<div class="breadcrumb"><a href="../index.html">Главная</a> / <a href="index.html">Кейсы</a> / Документооборот AI: OCR + LLM → 1С</div>
+<div style="background:var(--bg2);padding:80px 40px 60px;border-bottom:1px solid var(--border)">
+  <div class="wrap">
+    <div class="case-tag-badge">Логистика / Импорт</div>
+    <h1 style="font-size:clamp(2rem,4vw,3rem);font-weight:800;letter-spacing:-1px;margin:16px 0 16px;line-height:1.1">Документооборот AI: OCR + LLM → 1С</h1>
+    <p style="font-size:1.05rem;color:var(--mu);max-width:620px;line-height:1.75">400+ документов в сутки на русском и китайском без ручного ввода. Точность распознавания — 99.5%.</p>
+  </div>
+</div>
+<section class="sec"><div class="wrap">
+  <div class="cd-layout">
+    <div class="cd-body">
+      <h3>Задача клиента</h3><p>Логистическая компания (импорт из Китая): ежедневно 400+ документов на RU+ZH — инвойсы, CMR, накладные, сертификаты. 4 оператора тратили по 6 часов в день на ввод в 1С.</p>
+      <h3>Что сделали</h3><ul><li>Парсинг входящих email и Telegram-каналов для захвата документов</li><li>OCR (Tesseract + Google Vision) для скан-копий</li><li>GPT-4o для структурирования и перевода с китайского</li><li>API-интеграция с 1С:Предприятие 8.3</li><li>Дашборд для контроля ошибок и ручной корректировки</li></ul>
+      <h3>Технологический стек</h3><ul><li>Google Cloud Vision — OCR</li><li>GPT-4o — структурирование + перевод ZH→RU</li><li>FastAPI — API-слой</li><li>1С:Предприятие 8.3 — приёмник данных</li></ul>
+      <h3>Результат</h3><p>400+ документов в сутки обрабатывается автоматически. Точность — 99.5%. 4 оператора освобождены от рутины. Скорость ввода данных выросла в 12 раз. ROI — 2 месяца.</p>
+      <div style="margin-top:40px;display:flex;gap:12px;flex-wrap:wrap">
+        <a href="../custom/index.html" class="btn-p">Хочу такой же →</a>
+        <a href="index.html" class="btn-g">Все кейсы</a>
+      </div>
+    </div>
+    <div class="cd-sidebar">
+      <div class="cd-result-card"><div class="cd-result-n">−90%</div><div class="cd-result-l">ручного труда</div></div>
+      <div class="cd-result-card" style="border-color:rgba(0,212,164,0.3)"><div class="cd-result-n" style="color:var(--ac2)">×12</div><div class="cd-result-l">скорость ввода</div></div>
+      <div class="cd-meta">
+        <div class="cd-meta-row">Отрасль<span>Логистика / Импорт</span></div>
+        <div class="cd-meta-row">Срок внедрения<span>5 недель</span></div>
+        <div class="cd-meta-row">Масштаб<span>400+ документов/сутки</span></div>
+        <div class="cd-meta-row">ROI<span>2 месяца</span></div>
+        <div class="cd-meta-row">Стоимость проекта<span>от 400 000 ₽</span></div>
+      </div>
+      <a href="../contact/index.html" class="btn-p" style="display:block;text-align:center">Обсудить проект →</a>
+    </div>
+  </div>
+</div></section>
+<script>renderFooter('../');</script>
+<script src="../assets/js/main.js"></script>
+</body>
+</html>

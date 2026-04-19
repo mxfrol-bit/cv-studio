@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI-документооборот в 1С: как это работает и сколько стоит</title>
+<meta name="description" content="Подробный разбор AI-системы OCR + LLM → 1С. Как автоматически обрабатывать 400+ документов в сутки на русском и китайском без ручного ввода. Архитектура, стек, ROI.">
+<meta name="keywords" content="автоматизация документооборота ИИ, OCR 1С интеграция, нейросеть для обработки документов, AI для 1С, автоматический ввод данных 1С, LLM документооборот">
+<meta name="author" content="Chaos Vision AI Studio">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://chaosvision.ai/blog/posts/ai-document-flow-1c.html">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AI-документооборот в 1С: как это работает и сколько стоит">
+<meta property="og:description" content="Подробный разбор AI-системы OCR + LLM → 1С. Как автоматически обрабатывать 400+ документов в сутки на русском и китайском без ручного ввода. Архитектура, стек, ROI.">
+<meta property="og:url" content="https://chaosvision.ai/blog/posts/ai-document-flow-1c.html">
+<meta property="og:site_name" content="Chaos Vision AI Studio">
+<meta property="og:locale" content="ru_RU">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="AI-документооборот в 1С: как это работает и сколько стоит">
+<meta name="twitter:description" content="Подробный разбор AI-системы OCR + LLM → 1С. Как автоматически обрабатывать 400+ документов в сутки на русском и китайском без ручного ввода. Архитектура, стек, ROI.">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"AI-документооборот в 1С: как это работает и сколько стоит","description":"Подробный разбор AI-системы OCR + LLM → 1С. Как автоматически обрабатывать 400+ документов в сутки на русском и китайском без ручного ввода. Архитектура, стек, ROI.","author":{"@type":"Organization","name":"Chaos Vision AI Studio","url":"https://chaosvision.ai"},"publisher":{"@type":"Organization","name":"Chaos Vision AI Studio"},"datePublished":"2026-03-01","inLanguage":"ru"}</script>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/css/main.css">
+<style>
+.article-hero{padding:80px 40px 60px;background:var(--bg2);border-bottom:1px solid var(--border)}
+.article-body{max-width:720px}
+.article-body h2{font-size:1.5rem;font-weight:800;text-transform:uppercase;letter-spacing:-.5px;margin:40px 0 16px;line-height:1.15}
+.article-body h3{font-size:1rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin:28px 0 12px;color:var(--mu);font-family:var(--mono)}
+.article-body p{font-size:15px;color:var(--mu);line-height:1.85;margin-bottom:16px}
+.article-body ul,.article-body ol{padding-left:0;list-style:none;margin-bottom:16px}
+.article-body ul li,.article-body ol li{font-size:15px;color:var(--mu);padding:8px 0;border-bottom:1px solid var(--border);display:flex;gap:12px;align-items:flex-start;line-height:1.65}
+.article-body ul li::before{content:"→";color:var(--ac);font-family:var(--mono);flex-shrink:0}
+.article-body ol{counter-reset:ol}
+.article-body ol li::before{counter-increment:ol;content:counter(ol)".";color:var(--ac);font-family:var(--mono);font-weight:700;flex-shrink:0;min-width:20px}
+.article-body strong{color:var(--tx);font-weight:700}
+.article-callout{background:var(--bg3);border:1px solid var(--ba);border-left:3px solid var(--ac);padding:20px 24px;margin:24px 0;font-size:14px;line-height:1.75}
+.article-callout em{color:var(--ac);font-style:normal;font-weight:700}
+.article-num-row{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border:1px solid var(--border);margin:28px 0}
+.article-num{background:var(--bg2);padding:20px;text-align:center}
+.article-num-n{font-size:2rem;font-weight:800;color:var(--ac);font-family:var(--mono)}
+.article-num-l{font-size:10px;color:var(--mu);text-transform:uppercase;letter-spacing:1.5px;margin-top:4px;font-family:var(--mono)}
+.article-table{width:100%;border-collapse:collapse;margin:24px 0;font-size:13px}
+.article-table th{background:var(--bg3);padding:12px 16px;text-align:left;font-weight:700;text-transform:uppercase;font-size:10px;letter-spacing:1px;color:var(--mu);border-bottom:1px solid var(--border)}
+.article-table td{padding:12px 16px;border-bottom:1px solid var(--border);color:var(--mu)}
+.article-table td strong{color:var(--tx)}
+.article-table tr:hover td{background:var(--bg2)}
+@media(max-width:900px){.article-layout{grid-template-columns:1fr!important}}
+@media(max-width:600px){.article-hero{padding:60px 20px 40px}.article-num-row{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<script src="../../assets/js/components.js"></script>
+<script>renderNav('../../');</script>
+<div class="breadcrumb"><a href="../../index.html">Главная</a> / <a href="../../blog/index.html">Блог</a> / Статья</div>
+<div class="article-hero">
+  <div class="wrap">
+    <div class="case-tag-badge" style="margin-bottom:16px">Документооборот · 1С · Кейс</div>
+    <h1 style="font-size:clamp(1.8rem,4vw,2.8rem);font-weight:800;letter-spacing:-1px;line-height:1.15;max-width:700px;margin-bottom:16px">AI-документооборот в 1С: как это работает и сколько стоит</h1>
+    <div style="display:flex;gap:24px;align-items:center;flex-wrap:wrap;margin-top:16px">
+      <div style="font-family:var(--mono);font-size:11px;color:var(--mu)">Апрель 2026</div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--mu)">10 мин чтения</div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--ac2)">Chaos Vision AI Studio</div>
+    </div>
+  </div>
+</div>
+<section class="sec"><div class="wrap">
+  <div class="article-layout" style="display:grid;grid-template-columns:2fr 1fr;gap:64px;align-items:start">
+    <div class="article-body">
+      <p>У нашего клиента из логистики был стандартный для отрасли кошмар: каждый день приходило 400+ документов — инвойсы, CMR, накладные, сертификаты. Часть на русском, часть на китайском. Четыре оператора тратили по 6 часов в день на ручной ввод в 1С. Каждый второй день — ошибки. Каждую неделю — споры с поставщиками из-за этих ошибок.</p>
+
+      <div class="article-callout">Стоимость ошибки в логистическом документе — <em>от 50 000 ₽</em> (штрафы, задержки, претензии). Умножьте на 3–5 ошибок в неделю.</div>
+
+      <h2>Архитектура решения</h2>
+      <p>Система состоит из нескольких слоёв, каждый из которых решает свою задачу:</p>
+      <ol>
+        <li><strong>Захват документов.</strong> Следим за тремя каналами: входящие email (парсинг вложений), Telegram-чат с поставщиками, папка на корпоративном сервере для скан-копий.</li>
+        <li><strong>OCR.</strong> Google Cloud Vision для печатных документов, Tesseract для рукописных элементов. Предобработка: выравнивание, повышение контраста, удаление шума.</li>
+        <li><strong>LLM-структурирование.</strong> GPT-4o получает распознанный текст и извлекает структурированные поля: номер документа, дата, контрагент, позиции, суммы. Для китайского — сначала перевод, потом извлечение.</li>
+        <li><strong>Валидация.</strong> Автоматическая проверка: сумма позиций = итого, контрагент существует в базе, даты логичны. Подозрительные документы — в очередь на ручную проверку.</li>
+        <li><strong>Ввод в 1С.</strong> Через API 1С:Предприятие 8.3 данные создают нужный документ в системе. Статус отображается в дашборде.</li>
+      </ol>
+
+      <div class="article-num-row">
+        <div class="article-num"><div class="article-num-n">400+</div><div class="article-num-l">документов/сутки</div></div>
+        <div class="article-num"><div class="article-num-n" style="color:var(--ac2)">99.5%</div><div class="article-num-l">точность</div></div>
+        <div class="article-num"><div class="article-num-n">×12</div><div class="article-num-l">скорость обработки</div></div>
+      </div>
+
+      <h2>Сложности, с которыми столкнулись</h2>
+      <ul>
+        <li><strong>Нестандартные форматы.</strong> Каждый поставщик оформляет документы по-своему. Решение: LLM понимает суть, а не ищет поля по координатам — никаких шаблонов.</li>
+        <li><strong>Китайский язык.</strong> Иероглифы в таблицах — отдельная история. Понадобился специальный pre-processing для повышения качества OCR.</li>
+        <li><strong>API 1С.</strong> 1С — не самая дружелюбная система для интеграции. Написали собственный адаптер, который теперь используем во всех проектах.</li>
+        <li><strong>Доверие операторов.</strong> Первые 2 недели работали в режиме «AI предлагает, оператор подтверждает». После достижения 99% точности перешли на полный автопилот.</li>
+      </ul>
+
+      <h2>ROI и финансовая модель</h2>
+      <p>Стоимость проекта: 400 000 ₽ внедрение + 30 000 ₽/мес поддержка. До внедрения: 4 оператора × 6 ч/день × 22 рабочих дня = 528 человекочасов в месяц на ввод документов. При средней стоимости операторского часа 400 ₽ — 211 200 ₽/мес. После внедрения: ~2 часа/мес на проверку нетиповых документов.</p>
+      <p>Чистая экономия после вычета поддержки: ~180 000 ₽/мес. ROI на инвестиции в 400k — 2.2 месяца.</p>
+
+      <h2>Для кого это решение</h2>
+      <ul>
+        <li>Логистика и импорт (особенно с Китаем)</li>
+        <li>Оптовая торговля с большим числом поставщиков</li>
+        <li>Производственные компании с документооборотом по ISO</li>
+        <li>Бухгалтерии с потоком первичных документов</li>
+      </ul>
+
+      <div style="margin-top:40px;display:flex;gap:12px;flex-wrap:wrap">
+        <a href="../../cases/logistics.html" class="btn-p">Кейс: логистика →</a>
+        <a href="../../solutions/docs.html" class="btn-g">Решение: документооборот</a>
+      </div>
+    </div>
+    <div><div style="background:var(--bg2);border:1px solid var(--border);padding:28px;position:sticky;top:80px">
+      <div class="sec-label">/ Читайте также</div>
+      <div style="display:flex;flex-direction:column;gap:0;margin-top:12px"><a href="../../cases/logistics.html" style="font-size:13px;color:var(--mu);text-decoration:none;padding:8px 0;border-bottom:1px solid var(--border);display:block;transition:color .2s" onmouseover="this.style.color='var(--ac)'" onmouseout="this.style.color='var(--mu)'">→ Кейс: логистика −90%</a><a href="../../solutions/docs.html" style="font-size:13px;color:var(--mu);text-decoration:none;padding:8px 0;border-bottom:1px solid var(--border);display:block;transition:color .2s" onmouseover="this.style.color='var(--ac)'" onmouseout="this.style.color='var(--mu)'">→ Документооборот: решение</a><a href="../../products/index.html" style="font-size:13px;color:var(--mu);text-decoration:none;padding:8px 0;border-bottom:1px solid var(--border);display:block;transition:color .2s" onmouseover="this.style.color='var(--ac)'" onmouseout="this.style.color='var(--mu)'">→ Data Pipeline 1С → Web</a><a href="../../blog/posts/rag-systems-business.html" style="font-size:13px;color:var(--mu);text-decoration:none;padding:8px 0;border-bottom:1px solid var(--border);display:block;transition:color .2s" onmouseover="this.style.color='var(--ac)'" onmouseout="this.style.color='var(--mu)'">→ RAG-системы</a></div>
+      <div class="divider"></div>
+      <a href="../../contact/index.html" class="btn-p" style="display:block;text-align:center">Обсудить проект →</a>
+    </div></div>
+  </div>
+</div></section><script>renderFooter('../../');</script><script src="../../assets/js/main.js"></script></body></html>

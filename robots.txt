@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://chaosvision.ai/sitemap.xml
+
+# Chaos Vision AI Studio — https://chaosvision.ai

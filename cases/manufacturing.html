@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Предиктивное обслуживание оборудования — Кейс — CHAOS VISION</title>
+<meta name="description" content="ML-модель предсказывает отказы оборудования за 48–72 ч до сбоя. Незапланированные простои снизились на 40%.">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/main.css">
+</head>
+<body>
+<script src="../assets/js/components.js"></script>
+<script>renderNav('../');</script>
+<div class="breadcrumb"><a href="../index.html">Главная</a> / <a href="index.html">Кейсы</a> / Предиктивное обслуживание оборудования</div>
+<div style="background:var(--bg2);padding:80px 40px 60px;border-bottom:1px solid var(--border)">
+  <div class="wrap">
+    <div class="case-tag-badge">Производство</div>
+    <h1 style="font-size:clamp(2rem,4vw,3rem);font-weight:800;letter-spacing:-1px;margin:16px 0 16px;line-height:1.1">Предиктивное обслуживание оборудования</h1>
+    <p style="font-size:1.05rem;color:var(--mu);max-width:620px;line-height:1.75">ML-модель предсказывает отказы оборудования за 48–72 ч до сбоя. Незапланированные простои снизились на 40%.</p>
+  </div>
+</div>
+<section class="sec"><div class="wrap">
+  <div class="cd-layout">
+    <div class="cd-body">
+      <h3>Задача клиента</h3><p>Металлообрабатывающее предприятие. Незапланированные остановки линий обходились в 500K+ рублей/час. Регламентное ТО не помогало — 60% отказов происходили между плановыми проверками.</p>
+      <h3>Что сделали</h3><ul><li>Подключение к датчикам вибрации, температуры и тока через OPC-UA</li><li>ML-модель на временных рядах (LSTM) для предсказания деградации</li><li>Автоматические алерты механику за 48–72 ч до прогнозируемого отказа</li><li>Интеграция с 1С:ТОИР для формирования заявок на ТО</li><li>Дашборд состояния оборудования в реальном времени</li></ul>
+      <h3>Технологический стек</h3><ul><li>Python + LSTM — прогнозирование временных рядов</li><li>OPC-UA — сбор данных с датчиков</li><li>1С:ТОИР — интеграция с плановым ТО</li><li>Grafana — дашборд состояния</li></ul>
+      <h3>Результат</h3><p>Незапланированные простои снизились на 40%. Экономия за первый год — 18M рублей. Срок жизни критического оборудования вырос на 25% благодаря своевременному ТО.</p>
+      <div style="margin-top:40px;display:flex;gap:12px;flex-wrap:wrap">
+        <a href="../custom/index.html" class="btn-p">Хочу такой же →</a>
+        <a href="index.html" class="btn-g">Все кейсы</a>
+      </div>
+    </div>
+    <div class="cd-sidebar">
+      <div class="cd-result-card"><div class="cd-result-n">−40%</div><div class="cd-result-l">простоев</div></div>
+      <div class="cd-result-card" style="border-color:rgba(0,212,164,0.3)"><div class="cd-result-n" style="color:var(--ac2)">18M ₽</div><div class="cd-result-l">экономия за год</div></div>
+      <div class="cd-meta">
+        <div class="cd-meta-row">Отрасль<span>Металлообработка</span></div>
+        <div class="cd-meta-row">Срок внедрения<span>12 недель</span></div>
+        <div class="cd-meta-row">Масштаб<span>47 единиц оборудования</span></div>
+        <div class="cd-meta-row">ROI<span>3 месяца</span></div>
+        <div class="cd-meta-row">Стоимость проекта<span>от 1 200 000 ₽</span></div>
+      </div>
+      <a href="../contact/index.html" class="btn-p" style="display:block;text-align:center">Обсудить проект →</a>
+    </div>
+  </div>
+</div></section>
+<script>renderFooter('../');</script>
+<script src="../assets/js/main.js"></script>
+</body>
+</html>

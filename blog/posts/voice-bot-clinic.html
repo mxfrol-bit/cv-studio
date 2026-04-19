@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Как голосовой AI-бот окупился за 2 месяца в медицинской клинике</title>
+<meta name="description" content="Разбор кейса: голосовой бот на Retell AI + ElevenLabs для сети клиник. 320 входящих звонков в сутки, 70% обрабатывается без оператора. ROI — 2 месяца.">
+<meta name="keywords" content="голосовой бот для клиники, AI бот для звонков, автоматизация входящих звонков, голосовой AI ассистент, нейросеть для медицины, чат бот для записи на приём">
+<meta name="author" content="Chaos Vision AI Studio">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://chaosvision.ai/blog/posts/voice-bot-clinic.html">
+
+<!-- Open Graph -->
+<meta property="og:type" content="article">
+<meta property="og:title" content="Как голосовой AI-бот окупился за 2 месяца в медицинской клинике">
+<meta property="og:description" content="Разбор кейса: голосовой бот на Retell AI + ElevenLabs для сети клиник. 320 входящих звонков в сутки, 70% обрабатывается без оператора. ROI — 2 месяца.">
+<meta property="og:url" content="https://chaosvision.ai/blog/posts/voice-bot-clinic.html">
+<meta property="og:site_name" content="Chaos Vision AI Studio">
+<meta property="og:locale" content="ru_RU">
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Как голосовой AI-бот окупился за 2 месяца в медицинской клинике">
+<meta name="twitter:description" content="Разбор кейса: голосовой бот на Retell AI + ElevenLabs для сети клиник. 320 входящих звонков в сутки, 70% обрабатывается без оператора. ROI — 2 месяца.">
+
+<!-- Schema.org Article -->
+<script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "Как голосовой AI-бот окупился за 2 месяца в медицинской клинике",
+  "description": "Разбор кейса: голосовой бот на Retell AI + ElevenLabs для сети клиник. 320 входящих звонков в сутки, 70% обрабатывается без оператора. ROI — 2 месяца.",
+  "author": {"@type":"Organization","name":"Chaos Vision AI Studio","url":"https://chaosvision.ai"},
+  "publisher": {"@type":"Organization","name":"Chaos Vision AI Studio","logo":{"@type":"ImageObject","url":"https://chaosvision.ai/assets/img/logo.png"}},
+  "datePublished": "2026-04-01",
+  "inLanguage": "ru"
+}</script>
+
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/css/main.css">
+<style>
+.article-hero{padding:80px 40px 60px;background:var(--bg2);border-bottom:1px solid var(--border)}
+.article-body{max-width:720px}
+.article-body h2{font-size:1.5rem;font-weight:800;text-transform:uppercase;letter-spacing:-.5px;margin:40px 0 16px;line-height:1.15}
+.article-body h3{font-size:1rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin:28px 0 12px;color:var(--mu);font-family:var(--mono)}
+.article-body p{font-size:15px;color:var(--mu);line-height:1.85;margin-bottom:16px}
+.article-body ul,.article-body ol{padding-left:0;list-style:none;margin-bottom:16px}
+.article-body ul li,.article-body ol li{font-size:15px;color:var(--mu);padding:8px 0;border-bottom:1px solid var(--border);display:flex;gap:12px;align-items:flex-start;line-height:1.65}
+.article-body ul li::before{content:"→";color:var(--ac);font-family:var(--mono);flex-shrink:0}
+.article-body ol{counter-reset:ol}
+.article-body ol li::before{counter-increment:ol;content:counter(ol)".";color:var(--ac);font-family:var(--mono);font-weight:700;flex-shrink:0;min-width:20px}
+.article-body strong{color:var(--tx);font-weight:700}
+.article-callout{background:var(--bg3);border:1px solid var(--ba);border-left:3px solid var(--ac);padding:20px 24px;margin:24px 0;font-size:14px;line-height:1.75}
+.article-callout em{color:var(--ac);font-style:normal;font-weight:700}
+.article-num-row{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border:1px solid var(--border);margin:28px 0}
+.article-num{background:var(--bg2);padding:20px;text-align:center}
+.article-num-n{font-size:2rem;font-weight:800;color:var(--ac);font-family:var(--mono)}
+.article-num-l{font-size:10px;color:var(--mu);text-transform:uppercase;letter-spacing:1.5px;margin-top:4px;font-family:var(--mono)}
+.article-table{width:100%;border-collapse:collapse;margin:24px 0;font-size:13px}
+.article-table th{background:var(--bg3);padding:12px 16px;text-align:left;font-weight:700;text-transform:uppercase;font-size:10px;letter-spacing:1px;color:var(--mu);border-bottom:1px solid var(--border)}
+.article-table td{padding:12px 16px;border-bottom:1px solid var(--border);color:var(--mu)}
+.article-table td strong{color:var(--tx)}
+.article-table tr:hover td{background:var(--bg2)}
+.related-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:48px}
+@media(max-width:900px){.related-grid{grid-template-columns:1fr}}
+@media(max-width:600px){.article-hero{padding:60px 20px 40px}.article-num-row{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<script src="../../assets/js/components.js"></script>
+<script>renderNav('../../');</script>
+<div class="breadcrumb"><a href="../../index.html">Главная</a> / <a href="../../blog/index.html">Блог</a> / Как голосовой AI-бот окупился за 2 месяц...</div>
+<div class="article-hero">
+  <div class="wrap">
+    <div class="case-tag-badge" style="margin-bottom:16px">Голосовые боты · Кейс</div>
+    <h1 style="font-size:clamp(1.8rem,4vw,2.8rem);font-weight:800;letter-spacing:-1px;line-height:1.15;max-width:700px;margin-bottom:16px">Как голосовой AI-бот окупился за 2 месяца в медицинской клинике</h1>
+    <div style="display:flex;gap:24px;align-items:center;flex-wrap:wrap;margin-top:16px">
+      <div style="font-family:var(--mono);font-size:11px;color:var(--mu)">Апрель 2026</div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--mu)">8 мин чтения</div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--ac2)">Chaos Vision AI Studio</div>
+    </div>
+  </div>
+</div>
+
+<section class="sec"><div class="wrap">
+  <div style="display:grid;grid-template-columns:2fr 1fr;gap:64px;align-items:start">
+    <div class="article-body">
+      <p>Сеть медицинских клиник в Нижнем Новгороде столкнулась с классической проблемой роста: 8 операторов колл-центра физически не справлялись с потоком входящих звонков в часы пик. До 35% звонков уходило без ответа. Пациенты злились, записывались к конкурентам, а клиника теряла выручку.</p>
+
+      <div class="article-callout"><em>Задача:</em> снизить нагрузку на операторов без потери качества записи и без расширения штата.</div>
+
+      <h2>Почему выбрали голосового AI-бота, а не IVR</h2>
+      <p>Классический IVR (интерактивное голосовое меню) — это «нажмите 1, нажмите 2». Пациент злится, вешает трубку, пишет жалобу. Мы предложили принципиально другое: <strong>голосовой AI-агент, который разговаривает как человек</strong>.</p>
+      <p>Бот понимает естественную речь — «Хочу записаться к кардиологу на следующую неделю, желательно во второй половине дня» — и отвечает осмысленно, проверяя расписание в реальном времени через интеграцию с МИС.</p>
+
+      <div class="article-num-row">
+        <div class="article-num"><div class="article-num-n">320+</div><div class="article-num-l">звонков/день</div></div>
+        <div class="article-num"><div class="article-num-n" style="color:var(--ac2)">70%</div><div class="article-num-l">без оператора</div></div>
+        <div class="article-num"><div class="article-num-n">2 мес</div><div class="article-num-l">ROI</div></div>
+      </div>
+
+      <h2>Архитектура решения</h2>
+      <p>Стек, который мы выбрали для проекта:</p>
+      <ul>
+        <li><strong>Retell AI</strong> — платформа для голосовых агентов. Управляет диалогом, распознаёт речь, передаёт управление логике бота.</li>
+        <li><strong>ElevenLabs</strong> — синтез голоса. Клонировали голос одного из администраторов — пациенты не отличают от живого человека.</li>
+        <li><strong>Claude 3.5 Sonnet</strong> — «мозг» агента. Понимает контекст, принимает решения, формулирует ответы.</li>
+        <li><strong>N8N</strong> — оркестрация. Соединяет телефонию с МИС, CRM и базой расписаний.</li>
+        <li><strong>FastAPI</strong> — API-слой между ботом и системами клиники.</li>
+      </ul>
+
+      <h2>Как устроен диалог</h2>
+      <p>Бот ведёт разговор по дереву сценариев, но гибко — не скриптово. Пять ключевых сценариев:</p>
+      <ol>
+        <li>Первичная запись к врачу (квалификация специалиста + выбор слота)</li>
+        <li>Перенос или отмена существующей записи</li>
+        <li>Вопросы о стоимости услуг и подготовке к процедурам</li>
+        <li>Адреса и время работы клиник</li>
+        <li>Сложные случаи (жалобы, страховка, нестандартные запросы) → переключение на живого оператора</li>
+      </ol>
+      <p>Переключение на оператора происходит мягко: бот говорит «Сейчас переключу вас на специалиста, одну секунду» — без обрыва и без ощущения, что что-то пошло не так.</p>
+
+      <h2>Три недели до первого звонка</h2>
+      <p>Интеграция заняла ровно 3 недели. Первая неделя — подключение к МИС и синхронизация расписаний. Вторая — настройка сценариев и обучение бота на реальных диалогах (использовали 200 записей прошлых звонков). Третья — тестирование и стресс-тест: запустили бота на 10% входящих, остальное — операторы.</p>
+
+      <h2>Результаты через 60 дней</h2>
+      <ul>
+        <li>70% всех входящих звонков обрабатывается без участия оператора</li>
+        <li>Потери снизились с 35% до 4% (операторы больше не перегружены)</li>
+        <li>Среднее время ожидания: с 4 минут до 10 секунд</li>
+        <li>NPS вырос на 18 пунктов — пациенты довольны скоростью</li>
+        <li>Экономия: 6 операторских смен в неделю высвобождены для работы с VIP-пациентами</li>
+      </ul>
+
+      <div class="article-callout">Стоимость внедрения составила <em>350 000 ₽</em>. Экономия от сокращения нагрузки на операторов — <em>около 180 000 ₽/месяц</em>. ROI достигнут через <em>2 месяца</em>.</div>
+
+      <h2>Что дальше</h2>
+      <p>Следующий этап — исходящие звонки: подтверждение записей за 24 часа и сбор обратной связи после визита. По нашим расчётам, автоматизация исходящих снизит процент неявок ещё на 20–25%.</p>
+
+      <div style="margin-top:40px;display:flex;gap:12px;flex-wrap:wrap">
+        <a href="../../solutions/voice-bot.html" class="btn-p">Голосовые боты →</a>
+        <a href="../../contact/index.html" class="btn-g">Обсудить проект</a>
+      </div>
+    </div>
+    <div>
+      <div style="background:var(--bg2);border:1px solid var(--border);padding:28px;position:sticky;top:80px">
+        <div class="sec-label">/ Об авторе</div>
+        <div style="font-size:14px;color:var(--mu);line-height:1.7;margin-top:12px">Chaos Vision AI Studio — команда инженеров и продуктологов из Нижнего Новгорода. Специализируемся на AI-интеграции для бизнеса с 2024 года.</div>
+        <div class="divider"></div>
+        <div class="sec-label">/ Похожие кейсы</div>
+        <div style="display:flex;flex-direction:column;gap:10px;margin-top:12px">
+          <a href="../../cases/telephony.html" style="font-size:13px;color:var(--mu);text-decoration:none;padding:8px 0;border-bottom:1px solid var(--border);display:block;transition:color .2s" onmouseover="this.style.color='var(--ac)'" onmouseout="this.style.color='var(--mu)'">→ Кейс: медицинская клиника</a>
+          <a href="../../cases/b2b.html" style="font-size:13px;color:var(--mu);text-decoration:none;padding:8px 0;border-bottom:1px solid var(--border);display:block;transition:color .2s" onmouseover="this.style.color='var(--ac)'" onmouseout="this.style.color='var(--mu)'">→ Кейс: B2B переговоры</a>
+          <a href="../../solutions/voice-bot.html" style="font-size:13px;color:var(--mu);text-decoration:none;padding:8px 0;display:block;transition:color .2s" onmouseover="this.style.color='var(--ac)'" onmouseout="this.style.color='var(--mu)'">→ Голосовые боты</a>
+        </div>
+        <div class="divider"></div>
+        <a href="../../audit/index.html" class="btn-p" style="display:block;text-align:center">Заказать аудит →</a>
+      </div>
+    </div>
+  </div>
+</div></section><script>renderFooter('../../');</script><script src="../../assets/js/main.js"></script></body></html>

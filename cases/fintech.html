@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI-скоринг кредитных заявок — Кейс — CHAOS VISION</title>
+<meta name="description" content="LLM + ML анализирует нестандартные данные заёмщика. NPL снизился на 30%. Скорость принятия решений: с 4 ч до 12 мин.">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/main.css">
+</head>
+<body>
+<script src="../assets/js/components.js"></script>
+<script>renderNav('../');</script>
+<div class="breadcrumb"><a href="../index.html">Главная</a> / <a href="index.html">Кейсы</a> / AI-скоринг кредитных заявок</div>
+<div style="background:var(--bg2);padding:80px 40px 60px;border-bottom:1px solid var(--border)">
+  <div class="wrap">
+    <div class="case-tag-badge">Финтех / МФО</div>
+    <h1 style="font-size:clamp(2rem,4vw,3rem);font-weight:800;letter-spacing:-1px;margin:16px 0 16px;line-height:1.1">AI-скоринг кредитных заявок</h1>
+    <p style="font-size:1.05rem;color:var(--mu);max-width:620px;line-height:1.75">LLM + ML анализирует нестандартные данные заёмщика. NPL снизился на 30%. Скорость принятия решений: с 4 ч до 12 мин.</p>
+  </div>
+</div>
+<section class="sec"><div class="wrap">
+  <div class="cd-layout">
+    <div class="cd-body">
+      <h3>Задача клиента</h3><p>МФО с объёмом выдач 200+ заявок в день. Классический скоринг пропускал 30% "серых" заёмщиков, по которым не было стандартных данных. NPL рос. Нужен был нестандартный подход.</p>
+      <h3>Что сделали</h3><ul><li>LLM-анализ текстовых данных заявки: манера изложения, логика описания занятости</li><li>Поведенческий скоринг: время заполнения, паузы, исправления в анкете</li><li>Интеграция с БКИ и открытыми реестрами</li><li>Human-in-the-loop для пограничных случаев</li><li>Система объяснимости решений (XAI) для регулятора</li></ul>
+      <h3>Технологический стек</h3><ul><li>XGBoost + GPT-4o — гибридный скоринг</li><li>FastAPI — API для кредитной системы</li><li>Supabase — хранение векторов заявок</li><li>Grafana — мониторинг качества модели</li></ul>
+      <h3>Результат</h3><p>NPL снизился с 8% до 5.6% (−30%). Скорость принятия решения: с 4 часов до 12 минут. Конверсия в выдачу выросла на 12% за счёт снижения ложных отказов.</p>
+      <div style="margin-top:40px;display:flex;gap:12px;flex-wrap:wrap">
+        <a href="../custom/index.html" class="btn-p">Хочу такой же →</a>
+        <a href="index.html" class="btn-g">Все кейсы</a>
+      </div>
+    </div>
+    <div class="cd-sidebar">
+      <div class="cd-result-card"><div class="cd-result-n">−30%</div><div class="cd-result-l">уровень NPL</div></div>
+      <div class="cd-result-card" style="border-color:rgba(0,212,164,0.3)"><div class="cd-result-n" style="color:var(--ac2)">×20</div><div class="cd-result-l">скорость решения</div></div>
+      <div class="cd-meta">
+        <div class="cd-meta-row">Отрасль<span>Финтех / МФО</span></div>
+        <div class="cd-meta-row">Срок внедрения<span>10 недель</span></div>
+        <div class="cd-meta-row">Масштаб<span>200+ заявок/день</span></div>
+        <div class="cd-meta-row">ROI<span>4 месяца</span></div>
+        <div class="cd-meta-row">Стоимость проекта<span>от 800 000 ₽</span></div>
+      </div>
+      <a href="../contact/index.html" class="btn-p" style="display:block;text-align:center">Обсудить проект →</a>
+    </div>
+  </div>
+</div></section>
+<script>renderFooter('../');</script>
+<script src="../assets/js/main.js"></script>
+</body>
+</html>

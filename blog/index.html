@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Блог — AI-интеграция для бизнеса | Chaos Vision AI Studio Нижний Новгород</title>
+<meta name="description" content="Экспертный блог об AI-интеграции: кейсы с цифрами, сравнения инструментов, практика внедрения нейросетей для бизнеса. Голосовые боты, RAG, NeuroStaff, 1С.">
+<meta name="keywords" content="AI блог, нейросеть для бизнеса, автоматизация бизнеса ИИ, голосовой бот, RAG система, NeuroStaff HR, внедрение ИИ кейсы">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://chaosvision.ai/blog/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Блог Chaos Vision — AI-интеграция для бизнеса">
+<meta property="og:description" content="Кейсы, инструменты, сравнения. Только практика — без хайпа.">
+<meta property="og:url" content="https://chaosvision.ai/blog/">
+<meta property="og:site_name" content="Chaos Vision AI Studio">
+<meta property="og:locale" content="ru_RU">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Blog","name":"Chaos Vision AI Blog","description":"Экспертный блог об AI-интеграции для бизнеса","url":"https://chaosvision.ai/blog/","publisher":{"@type":"Organization","name":"Chaos Vision AI Studio","url":"https://chaosvision.ai"},"inLanguage":"ru"}</script>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/main.css">
+<style>
+.blog-grid-main{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.blog-card{background:var(--bg2);border:1px solid var(--border);overflow:hidden;transition:all .3s;text-decoration:none;color:inherit;display:block}
+.blog-card:hover{border-color:var(--ba);transform:translateY(-4px)}
+.blog-img{height:160px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.blog-img-label{font-family:var(--mono);font-size:10px;color:var(--ac);letter-spacing:2px;text-transform:uppercase;position:relative;z-index:1}
+.blog-body{padding:24px}
+.blog-date{font-family:var(--mono);font-size:10px;color:var(--mu);letter-spacing:2px;margin-bottom:10px;text-transform:uppercase}
+.blog-title{font-size:16px;font-weight:700;margin-bottom:8px;line-height:1.35}
+.blog-excerpt{font-size:13px;color:var(--mu);line-height:1.65;margin-bottom:14px}
+.blog-read-time{font-family:var(--mono);font-size:10px;color:var(--mu);letter-spacing:1px}
+@media(max-width:900px){.blog-grid-main{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){.blog-grid-main{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<script src="../assets/js/components.js"></script>
+<script>renderNav('../');</script>
+<div class="breadcrumb"><a href="../index.html">Главная</a> / Блог</div>
+
+<section class="sec pt64" style="background:var(--bg2)" data-particles>
+<div class="wrap">
+  <div class="tc reveal">
+    <div class="sec-label">/ Экспертный блог</div>
+    <h1 class="sec-title">Знания<br><em>без воды</em></h1>
+    <p class="sec-sub">Кейсы с реальными цифрами, разборы инструментов, практика внедрения AI. Пишем то, что сами используем в работе.</p>
+  </div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:32px">
+    <button onclick="filterPosts('all',this)" style="font-family:var(--mono);font-size:10px;letter-spacing:2px;text-transform:uppercase;padding:7px 14px;border:1px solid var(--ac);background:var(--ac);color:#fff;cursor:pointer" class="post-filter active">Все</button>
+    <button onclick="filterPosts('bots',this)" style="font-family:var(--mono);font-size:10px;letter-spacing:2px;text-transform:uppercase;padding:7px 14px;border:1px solid var(--border);background:transparent;color:var(--mu);cursor:pointer" class="post-filter">Боты</button>
+    <button onclick="filterPosts('strategy',this)" style="font-family:var(--mono);font-size:10px;letter-spacing:2px;text-transform:uppercase;padding:7px 14px;border:1px solid var(--border);background:transparent;color:var(--mu);cursor:pointer" class="post-filter">Стратегия</button>
+    <button onclick="filterPosts('tech',this)" style="font-family:var(--mono);font-size:10px;letter-spacing:2px;text-transform:uppercase;padding:7px 14px;border:1px solid var(--border);background:transparent;color:var(--mu);cursor:pointer" class="post-filter">Технологии</button>
+    <button onclick="filterPosts('hr',this)" style="font-family:var(--mono);font-size:10px;letter-spacing:2px;text-transform:uppercase;padding:7px 14px;border:1px solid var(--border);background:transparent;color:var(--mu);cursor:pointer" class="post-filter">HR</button>
+  </div>
+</div>
+</section>
+
+<section class="sec">
+<div class="wrap">
+  <div class="blog-grid-main" id="blog-grid">
+
+    <a href="posts/voice-bot-clinic.html" class="blog-card reveal" data-tag="bots">
+      <div class="blog-img" style="background:linear-gradient(135deg,rgba(124,111,255,.18),rgba(0,212,164,.08))">
+        <canvas style="position:absolute;inset:0;pointer-events:none;opacity:.5" class="mini-particles"></canvas>
+        <div class="blog-img-label">Голосовые боты · Кейс</div>
+      </div>
+      <div class="blog-body">
+        <div class="blog-date">Апрель 2026</div>
+        <div class="blog-title">Как голосовой AI-бот окупился за 2 месяца в медицинской клинике</div>
+        <div class="blog-excerpt">320 входящих в сутки. 70% без оператора. Ждали ROI за 6 месяцев — получили за 2.</div>
+        <div class="blog-read-time">8 мин → Читать</div>
+      </div>
+    </a>
+
+    <a href="posts/ai-tools-b2b-2026.html" class="blog-card reveal reveal-d1" data-tag="strategy">
+      <div class="blog-img" style="background:linear-gradient(135deg,rgba(0,212,164,.12),rgba(124,111,255,.06))">
+        <canvas style="position:absolute;inset:0;pointer-events:none;opacity:.5" class="mini-particles"></canvas>
+        <div class="blog-img-label">Стратегия · Инструменты</div>
+      </div>
+      <div class="blog-body">
+        <div class="blog-date">Март 2026</div>
+        <div class="blog-title">5 AI-инструментов для B2B, которые реально окупаются в 2026 году</div>
+        <div class="blog-excerpt">Без хайпа. Только то, что мы проверили на 50+ внедрениях с реальным ROI.</div>
+        <div class="blog-read-time">10 мин → Читать</div>
+      </div>
+    </a>
+
+    <a href="posts/rag-systems-business.html" class="blog-card reveal reveal-d2" data-tag="tech">
+      <div class="blog-img" style="background:linear-gradient(135deg,rgba(255,94,91,.1),rgba(124,111,255,.08))">
+        <canvas style="position:absolute;inset:0;pointer-events:none;opacity:.5" class="mini-particles"></canvas>
+        <div class="blog-img-label">RAG · Технологии</div>
+      </div>
+      <div class="blog-body">
+        <div class="blog-date">Март 2026</div>
+        <div class="blog-title">RAG-системы для бизнеса: что это, когда нужно и как внедрить</div>
+        <div class="blog-excerpt">AI работает только с вашими документами — без галлюцинаций и без утечек данных.</div>
+        <div class="blog-read-time">12 мин → Читать</div>
+      </div>
+    </a>
+
+    <a href="posts/ai-interview-vs-recruiter.html" class="blog-card reveal" data-tag="hr">
+      <div class="blog-img" style="background:linear-gradient(135deg,rgba(124,111,255,.12),rgba(0,212,164,.05))">
+        <canvas style="position:absolute;inset:0;pointer-events:none;opacity:.5" class="mini-particles"></canvas>
+        <div class="blog-img-label">HR · NeuroStaff</div>
+      </div>
+      <div class="blog-body">
+        <div class="blog-date">Февраль 2026</div>
+        <div class="blog-title">AI-интервью vs живой рекрутер: сравниваем качество отбора</div>
+        <div class="blog-excerpt">500+ кандидатов через NeuroStaff. Процент ложноположительных у AI — 8% vs 19% у человека.</div>
+        <div class="blog-read-time">9 мин → Читать</div>
+      </div>
+    </a>
+
+    <a href="posts/ai-document-flow-1c.html" class="blog-card reveal reveal-d1" data-tag="tech">
+      <div class="blog-img" style="background:linear-gradient(135deg,rgba(0,212,164,.1),rgba(255,94,91,.06))">
+        <canvas style="position:absolute;inset:0;pointer-events:none;opacity:.5" class="mini-particles"></canvas>
+        <div class="blog-img-label">Документооборот · 1С</div>
+      </div>
+      <div class="blog-body">
+        <div class="blog-date">Апрель 2026</div>
+        <div class="blog-title">AI-документооборот в 1С: как это работает и сколько стоит</div>
+        <div class="blog-excerpt">400+ документов в сутки, русский + китайский, точность 99.5%. ROI — 2.2 месяца.</div>
+        <div class="blog-read-time">10 мин → Читать</div>
+      </div>
+    </a>
+
+    <a href="posts/claude-vs-gpt4o.html" class="blog-card reveal reveal-d2" data-tag="tech">
+      <div class="blog-img" style="background:linear-gradient(135deg,rgba(255,94,91,.08),rgba(0,212,164,.1))">
+        <canvas style="position:absolute;inset:0;pointer-events:none;opacity:.5" class="mini-particles"></canvas>
+        <div class="blog-img-label">LLM · Сравнение</div>
+      </div>
+      <div class="blog-body">
+        <div class="blog-date">Январь 2026</div>
+        <div class="blog-title">Claude vs GPT-4o: какую LLM выбрать для корпоративного бота</div>
+        <div class="blog-excerpt">Честное сравнение по 8 параметрам на реальных задачах. Спойлер: зависит от задачи.</div>
+        <div class="blog-read-time">11 мин → Читать</div>
+      </div>
+    </a>
+
+  </div>
+</div>
+</section>
+
+<section class="sec-sm" style="background:var(--bg2);border-top:1px solid var(--border)" data-particles>
+<div class="wrap tc">
+  <div class="sec-label">/ Подписывайтесь</div>
+  <h2 class="sec-title" style="font-size:2rem">Новые статьи<br>в <em>Telegram</em></h2>
+  <p class="sec-sub" style="margin:12px auto 28px">Анонсы статей, кейсы в нашем Telegram-канале</p>
+  <a href="https://t.me/chaosvision_ai" class="btn-p" target="_blank">@chaosvision_ai →</a>
+</div>
+</section>
+
+<script>
+// Blog filter
+function filterPosts(tag, btn) {
+  document.querySelectorAll('.post-filter').forEach(b => {
+    b.style.background = 'transparent'; b.style.borderColor = 'var(--border)'; b.style.color = 'var(--mu)';
+  });
+  btn.style.background = 'var(--ac)'; btn.style.borderColor = 'var(--ac)'; btn.style.color = '#fff';
+  document.querySelectorAll('#blog-grid .blog-card').forEach(c => {
+    c.style.display = (tag === 'all' || c.dataset.tag === tag) ? 'block' : 'none';
+  });
+}
+// Mini canvas particles on blog cards
+document.querySelectorAll('.mini-particles').forEach(canvas => {
+  const ctx = canvas.getContext('2d');
+  let pts = [];
+  const parent = canvas.parentElement;
+  function resize() { canvas.width = parent.offsetWidth; canvas.height = parent.offsetHeight; }
+  resize();
+  for(let i=0;i<20;i++) pts.push({x:Math.random()*parent.offsetWidth,y:Math.random()*parent.offsetHeight,r:.8,dx:(Math.random()-.5)*.3,dy:(Math.random()-.5)*.3,a:Math.random()*.5+.1});
+  function draw() {
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    pts.forEach(p=>{p.x+=p.dx;p.y+=p.dy;if(p.x<0)p.x=canvas.width;if(p.x>canvas.width)p.x=0;if(p.y<0)p.y=canvas.height;if(p.y>canvas.height)p.y=0;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=`rgba(124,111,255,${p.a})`;ctx.fill();});
+    requestAnimationFrame(draw);
+  }
+  draw();
+});
+</script>
+
+<script>renderFooter('../');</script>
+<script src="../assets/js/main.js"></script>
+</body>
+</html>
