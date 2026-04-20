@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AI-документооборот — структурирование для 1С | Chaos Vision</title>
+<meta name="description" content="Вставь текст накладной, счёта или договора — AI структурирует данные для ввода в 1С.">
+<meta name="keywords" content="AI документооборот 1С, OCR нейросеть, автоматизация ввода документов">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/css/main.css">
+<link rel="stylesheet" href="../assets/css/platform.css">
+</head>
+<body>
+<script src="../../assets/js/components.js"></script>
+<script>renderNav('../../');</script>
+
+<div style="padding:76px 0 0;background:var(--bg2);border-bottom:1px solid var(--border)">
+  <div class="wrap" style="padding-top:20px;padding-bottom:20px">
+    <div class="breadcrumb" style="padding:0;border:none;background:transparent;margin-bottom:16px">
+      <a href="../../index.html">Главная</a> / <a href="../index.html">Демо-платформа</a> / Документооборот
+    </div>
+    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:10px">
+      <span class="svc-tag" style="color:#00D4A4;border-color:#00D4A440;background:#00D4A412">04 / OCR + LLM → 1С</span>
+      <span style="font-size:20px;font-weight:800;color:var(--tx);text-transform:uppercase;letter-spacing:.5px">Документооборот</span>
+      <span style="margin-left:auto;font-family:var(--mono);font-size:13px;font-weight:700;color:#00D4A4">−90% труда</span>
+    </div>
+    <p style="font-size:14px;color:var(--mu);max-width:560px;line-height:1.7">Вставь текст накладной, счёта или договора — AI структурирует данные для ввода в 1С.</p>
+  </div>
+</div>
+
+<div class="demo-layout">
+  <div class="demo-input">
+    <div class="panel-label" style="color:#00D4A4">/ Текст документа (накладная, счёт, договор)</div>
+    <textarea id="demo-input" class="demo-textarea">ТОВАРНАЯ НАКЛАДНАЯ №ТН-2847 от 15.03.2026
+Поставщик: ООО МеталлТрейд, ИНН 7704512847
+Покупатель: ООО СтройГрупп, ИНН 5257183920
+
+Лист г/к 4мм | 5000 кг | 58.50р | 292 500р
+Уголок 50х50 | 1200 кг | 62.00р | 74 400р
+
+Итого без НДС: 366 900р, НДС 20%: 73 380р, ИТОГО: 440 280р</textarea>
+    <button id="run-btn" class="run-btn" style="background:#00D4A4">Запустить AI-анализ →</button>
+    <div style="font-family:var(--mono);font-size:9px;color:var(--mu);text-align:center;letter-spacing:1px;text-transform:uppercase">Powered by Claude 3.5 Sonnet · Chaos Vision</div>
+  </div>
+  <div class="demo-output">
+    <div class="panel-label" style="color:#00D4A4">/ Результат AI-анализа</div>
+    <div id="placeholder" class="result-placeholder">
+      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" style="opacity:.35;color:var(--mu)"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+      <span style="font-family:var(--mono);font-size:10px;color:var(--mu);letter-spacing:1px;text-transform:uppercase;text-align:center">Нажмите «Запустить»</span>
+    </div>
+    <div id="spin-wrap" style="display:none;flex:1;flex-direction:column;align-items:center;justify-content:center;gap:14px">
+      <div id="spinner" class="spinner" style="border-top-color:#00D4A4"></div>
+      <span style="font-family:var(--mono);font-size:10px;color:var(--mu);letter-spacing:1px;text-transform:uppercase">Claude анализирует...</span>
+    </div>
+    <div id="result" class="result-area" style="display:none" data-color="#00D4A4"></div>
+    <div id="result-actions" class="result-actions" style="display:none">
+      <button id="btn-reset" class="result-btn">Сбросить</button>
+      <button id="btn-copy" class="result-btn">Скопировать</button>
+    </div>
+    <div id="lead-section" style="margin-top:20px;display:none">
+      <div class="lead-wrap">
+        <div class="lead-title">Хотите внедрить «Документооборот» у себя?</div>
+        <div class="lead-sub">Полноценное внедрение под ключ. Ответим в течение 4 часов.</div>
+        <form class="lead-form">
+          <div class="fl"><div class="fl-label">Имя и компания</div><input class="fl-input" name="name" placeholder="Иван · ООО Название" required></div>
+          <div class="fl"><div class="fl-label">Telegram или Email</div><input class="fl-input" name="contact" placeholder="@username или email" required></div>
+          <input type="hidden" name="service" value="docflow">
+          <button type="submit" class="lead-btn" style="background:#00D4A4">Обсудить внедрение →</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const PROMPT_FN = (v) => `Ты система OCR для 1С. Обработай документ:\n\n{val}\n\n**ТИП ДОКУМЕНТА:**\n**РЕКВИЗИТЫ:** (номер, дата, поставщик/ИНН, покупатель/ИНН)\n**ТАБЛИЧНАЯ ЧАСТЬ:** (таблица: номенклатура, кол-во, ед, цена, сумма)\n**ФИНАНСОВЫЕ ИТОГИ:** (без НДС, НДС, итого)\n**СТАТУС ВАЛИДАЦИИ:** ОК / Требует проверки\n**ДЕЙСТВИЕ В 1С:** какой документ создать`.replace('{val}', v);
+initDemoPage({
+  color: '#00D4A4', inputId: 'demo-input', btnId: 'run-btn',
+  outputId: 'result', placeholderId: 'placeholder',
+  spinId: 'spin-wrap', actionsId: 'result-actions', promptFn: PROMPT_FN,
+});
+document.getElementById('run-btn').addEventListener('click', () => {
+  setTimeout(() => {
+    if (document.getElementById('result').style.display !== 'none') {
+      document.getElementById('lead-section').style.display = 'block';
+    }
+  }, 3000);
+});
+</script>
+<script>renderFooter('../../');</script>
+<script src="../../assets/js/main.js"></script>
+<script src="../assets/js/platform.js"></script>
+</body></html>

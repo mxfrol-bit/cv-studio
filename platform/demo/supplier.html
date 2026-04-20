@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Снабженец — AI-агрегатор прайсов | Chaos Vision</title>
+<meta name="description" content="Введи список товаров — AI сравнит поставщиков и выдаст рекомендацию по экономии.">
+<meta name="keywords" content="снабженец AI, агрегатор прайсов нейросеть, закупки автоматизация">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/css/main.css">
+<link rel="stylesheet" href="../assets/css/platform.css">
+</head>
+<body>
+<script src="../../assets/js/components.js"></script>
+<script>renderNav('../../');</script>
+
+<div style="padding:76px 0 0;background:var(--bg2);border-bottom:1px solid var(--border)">
+  <div class="wrap" style="padding-top:20px;padding-bottom:20px">
+    <div class="breadcrumb" style="padding:0;border:none;background:transparent;margin-bottom:16px">
+      <a href="../../index.html">Главная</a> / <a href="../index.html">Демо-платформа</a> / Снабженец
+    </div>
+    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:10px">
+      <span class="svc-tag" style="color:#7C6FFF;border-color:#7C6FFF40;background:#7C6FFF12">01 / Агрегатор прайсов</span>
+      <span style="font-size:20px;font-weight:800;color:var(--tx);text-transform:uppercase;letter-spacing:.5px">Снабженец</span>
+      <span style="margin-left:auto;font-family:var(--mono);font-size:13px;font-weight:700;color:#7C6FFF">−30% к ценам</span>
+    </div>
+    <p style="font-size:14px;color:var(--mu);max-width:560px;line-height:1.7">Введи список товаров — AI сравнит поставщиков и выдаст рекомендацию по экономии.</p>
+  </div>
+</div>
+
+<div class="demo-layout">
+  <div class="demo-input">
+    <div class="panel-label" style="color:#7C6FFF">/ Список товаров и объёмы закупки</div>
+    <textarea id="demo-input" class="demo-textarea">- Металлопрокат ст3 лист 4мм — 5 тонн
+- Болты М10×50 — 10 000 шт
+- Краска эпоксидная RAL 7035 — 200 кг</textarea>
+    <button id="run-btn" class="run-btn" style="background:#7C6FFF">Запустить AI-анализ →</button>
+    <div style="font-family:var(--mono);font-size:9px;color:var(--mu);text-align:center;letter-spacing:1px;text-transform:uppercase">Powered by Claude 3.5 Sonnet · Chaos Vision</div>
+  </div>
+  <div class="demo-output">
+    <div class="panel-label" style="color:#7C6FFF">/ Результат AI-анализа</div>
+    <div id="placeholder" class="result-placeholder">
+      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" style="opacity:.35;color:var(--mu)"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+      <span style="font-family:var(--mono);font-size:10px;color:var(--mu);letter-spacing:1px;text-transform:uppercase;text-align:center">Нажмите «Запустить»</span>
+    </div>
+    <div id="spin-wrap" style="display:none;flex:1;flex-direction:column;align-items:center;justify-content:center;gap:14px">
+      <div id="spinner" class="spinner" style="border-top-color:#7C6FFF"></div>
+      <span style="font-family:var(--mono);font-size:10px;color:var(--mu);letter-spacing:1px;text-transform:uppercase">Claude анализирует...</span>
+    </div>
+    <div id="result" class="result-area" style="display:none" data-color="#7C6FFF"></div>
+    <div id="result-actions" class="result-actions" style="display:none">
+      <button id="btn-reset" class="result-btn">Сбросить</button>
+      <button id="btn-copy" class="result-btn">Скопировать</button>
+    </div>
+    <div id="lead-section" style="margin-top:20px;display:none">
+      <div class="lead-wrap">
+        <div class="lead-title">Хотите внедрить «Снабженец» у себя?</div>
+        <div class="lead-sub">Полноценное внедрение под ключ. Ответим в течение 4 часов.</div>
+        <form class="lead-form">
+          <div class="fl"><div class="fl-label">Имя и компания</div><input class="fl-input" name="name" placeholder="Иван · ООО Название" required></div>
+          <div class="fl"><div class="fl-label">Telegram или Email</div><input class="fl-input" name="contact" placeholder="@username или email" required></div>
+          <input type="hidden" name="service" value="supplier">
+          <button type="submit" class="lead-btn" style="background:#7C6FFF">Обсудить внедрение →</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const PROMPT_FN = (v) => `Ты эксперт по закупкам в России. Пользователь хочет закупить:\n\n{val}\n\n1. По каждой позиции: 2-3 категории поставщиков с ценами (руб/ед), условиями\n2. Где искать: конкретные площадки\n3. Как сэкономить 20-30%\n\nРеальные цены Россия 2026. Конкретика без воды.`.replace('{val}', v);
+initDemoPage({
+  color: '#7C6FFF', inputId: 'demo-input', btnId: 'run-btn',
+  outputId: 'result', placeholderId: 'placeholder',
+  spinId: 'spin-wrap', actionsId: 'result-actions', promptFn: PROMPT_FN,
+});
+document.getElementById('run-btn').addEventListener('click', () => {
+  setTimeout(() => {
+    if (document.getElementById('result').style.display !== 'none') {
+      document.getElementById('lead-section').style.display = 'block';
+    }
+  }, 3000);
+});
+</script>
+<script>renderFooter('../../');</script>
+<script src="../../assets/js/main.js"></script>
+<script src="../assets/js/platform.js"></script>
+</body></html>

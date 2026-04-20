@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Демо-платформа — 6 AI-сервисов | Chaos Vision</title>
+<meta name="description" content="Попробуй 6 AI-сервисов прямо сейчас без регистрации. Снабженец, Голосовой бот, Контроль менеджеров, Документооборот, HR-скрининг, Ценообразование.">
+<meta name="keywords" content="AI демо, нейросеть для бизнеса демо, голосовой бот попробовать, AI скрининг резюме, документооборот AI, снабженец AI">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/main.css">
+<link rel="stylesheet" href="./assets/css/platform.css">
+</head>
+<body>
+<script src="../assets/js/components.js"></script>
+<script>renderNav('../');</script>
+
+<!-- breadcrumb -->
+<div class="breadcrumb"><a href="../index.html">Главная</a> / Демо-платформа</div>
+
+<div class="hero" style="min-height:50vh;padding:80px 40px 60px">
+  <canvas id="particles" class="particles-canvas"></canvas>
+  <div style="position:relative;z-index:1">
+    <div class="hero-eyebrow">/ AI Demo · 6 сервисов · Без регистрации · Claude API</div>
+    <h1 class="hero-h1" style="font-size:clamp(2.5rem,7vw,5.5rem)">МЫ УЧИМ ИИ<br>РАБОТАТЬ<br><em>НА ВАС</em></h1>
+    <p class="hero-p">Вставь свои данные — получи результат через 10 секунд. Реальный Claude API, реальные ответы.</p>
+    <div class="hero-btns">
+      <a href="#services" class="btn-p">Выбрать сервис →</a>
+      <a href="../contact/index.html" class="btn-g">Внедрить у себя</a>
+    </div>
+    <div class="hero-stats" style="max-width:480px">
+      <div class="hs"><div class="hs-n">6</div><div class="hs-l">Сервисов</div></div>
+      <div class="hs"><div class="hs-n">10с</div><div class="hs-l">Первый результат</div></div>
+      <div class="hs"><div class="hs-n" style="color:var(--ac2)">0</div><div class="hs-l">Регистраций</div></div>
+      <div class="hs"><div class="hs-n">24/7</div><div class="hs-l">Онлайн</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="mq"><div class="mq-inner">
+  <span class="mq-item">Снабженец <span>−30% к ценам</span></span>
+  <span class="mq-item">Голосовой бот <span>70% авто</span></span>
+  <span class="mq-item">Контроль менеджеров <span>+18% сделок</span></span>
+  <span class="mq-item">Документооборот <span>−90% труда</span></span>
+  <span class="mq-item">HR-скрининг <span>×5 быстрее</span></span>
+  <span class="mq-item">Ценообразование <span>+20% маржа</span></span>
+  <span class="mq-item">Снабженец <span>−30% к ценам</span></span>
+  <span class="mq-item">Голосовой бот <span>70% авто</span></span>
+  <span class="mq-item">Контроль менеджеров <span>+18% сделок</span></span>
+  <span class="mq-item">Документооборот <span>−90% труда</span></span>
+  <span class="mq-item">HR-скрининг <span>×5 быстрее</span></span>
+  <span class="mq-item">Ценообразование <span>+20% маржа</span></span>
+</div></div>
+
+<section class="sec" id="services">
+<div class="wrap">
+  <div class="reveal"><div class="sec-label">/ 6 AI-сервисов</div><h2 class="sec-title">Выберите сервис<br><em>и запустите демо</em></h2><p class="sec-sub">Каждый сервис работает на Claude 3.5. Настоящий AI — не заглушки.</p></div>
+  <div class="services-grid" style="margin-top:40px">
+    <a href="demo/supplier.html" class="svc-card reveal" style="--card-color:#7C6FFF">
+      <span class="svc-arrow">↗</span>
+      <span class="svc-tag" style="color:#7C6FFF;border-color:#7C6FFF40;background:#7C6FFF12">01 / Снабженец</span>
+      <div class="svc-name">Снабженец</div>
+      <div class="svc-desc">Опиши список закупок — AI сравнит поставщиков, цены и выдаст рекомендацию по экономии.</div>
+      <div class="svc-metric"><div class="svc-metric-n" style="color:#7C6FFF">−30%</div><div class="svc-metric-l">к закупочным ценам</div></div>
+    </a>
+    <a href="demo/voicebot.html" class="svc-card reveal reveal-d1" style="--card-color:#5B9EFF">
+      <span class="svc-arrow">↗</span>
+      <span class="svc-tag" style="color:#5B9EFF;border-color:#5B9EFF40;background:#5B9EFF12">02 / Голосовой бот</span>
+      <div class="svc-name">Голосовой бот</div>
+      <div class="svc-desc">Опиши свой бизнес — получи готовый сценарий диалога для входящих звонков 24/7.</div>
+      <div class="svc-metric"><div class="svc-metric-n" style="color:#5B9EFF">70%</div><div class="svc-metric-l">звонков без оператора</div></div>
+    </a>
+    <a href="demo/salescontrol.html" class="svc-card reveal reveal-d2" style="--card-color:#FF7A5C">
+      <span class="svc-arrow">↗</span>
+      <span class="svc-tag" style="color:#FF7A5C;border-color:#FF7A5C40;background:#FF7A5C12">03 / Контроль менеджеров</span>
+      <div class="svc-name">Контроль менеджеров</div>
+      <div class="svc-desc">Вставь транскрипт переговоров — AI оценит по 6 параметрам и покажет где теряются сделки.</div>
+      <div class="svc-metric"><div class="svc-metric-n" style="color:#FF7A5C">+18%</div><div class="svc-metric-l">закрытых сделок</div></div>
+    </a>
+    <a href="demo/docflow.html" class="svc-card reveal" style="--card-color:#00D4A4">
+      <span class="svc-arrow">↗</span>
+      <span class="svc-tag" style="color:#00D4A4;border-color:#00D4A440;background:#00D4A412">04 / Документооборот</span>
+      <div class="svc-name">Документооборот</div>
+      <div class="svc-desc">Вставь текст накладной, счёта или договора — AI структурирует данные для ввода в 1С.</div>
+      <div class="svc-metric"><div class="svc-metric-n" style="color:#00D4A4">−90%</div><div class="svc-metric-l">ручного труда</div></div>
+    </a>
+    <a href="demo/hrscreen.html" class="svc-card reveal reveal-d1" style="--card-color:#E8A838">
+      <span class="svc-arrow">↗</span>
+      <span class="svc-tag" style="color:#E8A838;border-color:#E8A83840;background:#E8A83812">05 / AI-скрининг</span>
+      <div class="svc-name">AI-скрининг</div>
+      <div class="svc-desc">Вакансия + резюме → балл, вердикт, сильные стороны, риски, прогноз кандидата.</div>
+      <div class="svc-metric"><div class="svc-metric-n" style="color:#E8A838">×5</div><div class="svc-metric-l">скорость найма</div></div>
+    </a>
+    <a href="demo/pricing.html" class="svc-card reveal reveal-d2" style="--card-color:#C87EFF">
+      <span class="svc-arrow">↗</span>
+      <span class="svc-tag" style="color:#C87EFF;border-color:#C87EFF40;background:#C87EFF12">06 / Ценообразование</span>
+      <div class="svc-name">Ценообразование</div>
+      <div class="svc-desc">Твои данные + цены конкурентов → оптимальная цена, стратегия, прогноз эффекта.</div>
+      <div class="svc-metric"><div class="svc-metric-n" style="color:#C87EFF">+20%</div><div class="svc-metric-l">маржинальность</div></div>
+    </a>
+  </div>
+</div>
+</section>
+
+<section class="sec-sm" style="background:var(--bg2);border-top:1px solid var(--border)">
+<div class="wrap" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:24px">
+  <div><div class="sec-label">/ Понравилось? Внедрим у вас</div><h2 style="font-size:1.8rem;font-weight:800;line-height:1.1;letter-spacing:-1px">Пилот за <em style="color:var(--ac);font-style:normal">3 недели</em>.<br>Гарантия KPI.</h2></div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap">
+    <a href="../audit/index.html" class="btn-p">Заказать аудит →</a>
+    <a href="../contact/index.html" class="btn-g">Связаться</a>
+  </div>
+</div>
+</section>
+<script>renderFooter('../');</script>
+<script src="../assets/js/main.js"></script>
+<script src="./assets/js/platform.js"></script>
+</body></html>

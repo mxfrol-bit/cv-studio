@@ -45,7 +45,7 @@ window.renderNav = function(prefix = '') {
     <li class="nav-item"><a class="nav-link" href="${prefix}blog/index.html">Блог</a></li>
     <li class="nav-item"><a class="nav-link" href="${prefix}faq/index.html">FAQ</a></li>
   </ul>
-  <a class="nav-link" href="https://platform.chaosvision.ai" target="_blank" style="color:var(--ac2);border:1px solid rgba(0,212,164,.3);padding:8px 14px;font-size:10px;font-family:var(--mono);letter-spacing:2px;text-transform:uppercase;margin-right:4px;transition:all .2s" onmouseover="this.style.borderColor='var(--ac2)'" onmouseout="this.style.borderColor='rgba(0,212,164,.3)'">Демо ↗</a>
+  <a class="nav-link" href="${prefix}platform/index.html" style="color:var(--ac2);border:1px solid rgba(0,212,164,.3);padding:8px 14px;font-size:10px;font-family:var(--mono);letter-spacing:2px;text-transform:uppercase;margin-right:4px;transition:all .2s" onmouseover="this.style.borderColor='var(--ac2)'" onmouseout="this.style.borderColor='rgba(0,212,164,.3)'">Демо ↗</a>
   <a class="nav-cta" href="${prefix}contact/index.html">Связаться</a>
   <button class="burger" id="burger"><span></span><span></span><span></span></button>
 </nav>
@@ -55,7 +55,7 @@ window.renderNav = function(prefix = '') {
   <a href="${prefix}solutions/index.html">Решения</a>
   <a href="${prefix}cases/index.html">Кейсы</a>
   <a href="${prefix}products/index.html">Продукты</a>
-  <a href="https://platform.chaosvision.ai" target="_blank" style="color:var(--ac2)">Демо-платформа ↗</a>
+  <a href="${prefix}platform/index.html" style="color:var(--ac2)">Демо-платформа ↗</a>
   <a href="${prefix}pricing/index.html">Цены</a>
   <a href="${prefix}audit/index.html">Аудит</a>
   <a href="${prefix}investors/index.html">Инвесторам</a>
@@ -95,7 +95,7 @@ window.renderFooter = function(prefix = '') {
         <ul class="footer-links-list">
           <li><a href="${prefix}cases/index.html">Кейсы</a></li>
           <li><a href="${prefix}products/index.html">Продукты</a></li>
-          <li><a href="https://platform.chaosvision.ai" target="_blank" style="color:var(--ac2)">Демо-платформа ↗</a></li>
+          <li><a href="${prefix}platform/index.html" style="color:var(--ac2)">Демо-платформа ↗</a></li>
           <li><a href="${prefix}pricing/index.html">Цены</a></li>
           <li><a href="${prefix}audit/index.html">Аудит</a></li>
           <li><a href="${prefix}blog/index.html">Блог</a></li>
