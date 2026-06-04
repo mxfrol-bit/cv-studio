@@ -130,40 +130,77 @@
     var dpr = Math.min(window.devicePixelRatio || 1, 2);
     var w = 0, h = 0, cx = 0, cy = 0, R = 0, raf = null, visible = true, last = 0;
 
-    // rigid 3D structure: points on a sphere (built once), connected to nearest neighbours
-    var base = [], edges = [], proj = [], built = false;
+    // rigid 3D crystal: a faceted geodesic icosphere (built once) + floating debris shards
+    var verts = [], faces = [], shards = [], proj = [], built = false, lastNarrow = null;
     // rotation state — one transform applied to the whole body => it turns as a single mechanism
     var angleY = 0, spinVel = 0, lastScrollY = window.pageYOffset || 0;
     var tiltX = 0, tiltY = 0, tiltTX = 0, tiltTY = 0; // eased cursor parallax
 
+    // build a geodesic icosphere by subdividing an icosahedron `sub` times
+    function makeIcosphere(sub) {
+      var t = (1 + Math.sqrt(5)) / 2;
+      var V = [[-1, t, 0], [1, t, 0], [-1, -t, 0], [1, -t, 0], [0, -1, t], [0, 1, t],
+               [0, -1, -t], [0, 1, -t], [t, 0, -1], [t, 0, 1], [-t, 0, -1], [-t, 0, 1]];
+      for (var i = 0; i < V.length; i++) {
+        var L = Math.sqrt(V[i][0] * V[i][0] + V[i][1] * V[i][1] + V[i][2] * V[i][2]);
+        V[i] = [V[i][0] / L, V[i][1] / L, V[i][2] / L];
+      }
+      var F = [[0,11,5],[0,5,1],[0,1,7],[0,7,10],[0,10,11],[1,5,9],[5,11,4],[11,10,2],
+               [10,7,6],[7,1,8],[3,9,4],[3,4,2],[3,2,6],[3,6,8],[3,8,9],[4,9,5],
+               [2,4,11],[6,2,10],[8,6,7],[9,8,1]];
+      var cache = {};
+      function mid(a, b) {
+        var key = a < b ? a + '_' + b : b + '_' + a;
+        if (cache[key] != null) return cache[key];
+        var m = [(V[a][0] + V[b][0]) / 2, (V[a][1] + V[b][1]) / 2, (V[a][2] + V[b][2]) / 2];
+        var L = Math.sqrt(m[0] * m[0] + m[1] * m[1] + m[2] * m[2]);
+        V.push([m[0] / L, m[1] / L, m[2] / L]);
+        return (cache[key] = V.length - 1);
+      }
+      for (var s = 0; s < sub; s++) {
+        var F2 = [];
+        for (var f = 0; f < F.length; f++) {
+          var a = F[f][0], b = F[f][1], c = F[f][2];
+          var ab = mid(a, b), bc = mid(b, c), ca = mid(c, a);
+          F2.push([a, ab, ca], [b, bc, ab], [c, ca, bc], [ab, bc, ca]);
+        }
+        F = F2;
+      }
+      return { V: V, F: F };
+    }
+
     function buildGeometry() {
-      var N = w < 720 ? 84 : 132;
-      base = [];
-      var gold = Math.PI * (3 - Math.sqrt(5));
-      for (var i = 0; i < N; i++) {
-        var y = 1 - (i + 0.5) / N * 2;          // -1 .. 1
-        var rr = Math.sqrt(1 - y * y);
-        var th = gold * i;
-        base.push({ x: Math.cos(th) * rr, y: y, z: Math.sin(th) * rr, ph: Math.random() * 6.28 });
+      var sub = w < 860 ? 1 : 2;            // 80 vs 320 facets
+      var ico = makeIcosphere(sub);
+      var V = ico.V;
+      // displace each vertex irregularly so the body reads as a rough, faceted crystal
+      verts = [];
+      for (var i = 0; i < V.length; i++) {
+        var x = V[i][0], y = V[i][1], z = V[i][2];
+        var n = 1
+          + 0.22 * Math.sin(x * 3.1 + 1.7) * Math.cos(y * 2.7)
+          + 0.15 * Math.sin(z * 3.9 + 0.4)
+          + 0.10 * Math.cos((x + y) * 4.3);
+        verts.push({ x: x * n, y: y * n * 1.18, z: z * n, ph: Math.random() * 6.28 });
       }
-      // connect each node to its k nearest neighbours (fixed wireframe topology)
-      edges = [];
-      var seen = {};
-      for (var a = 0; a < N; a++) {
-        var dists = [];
-        for (var b = 0; b < N; b++) {
-          if (a === b) continue;
-          var dx = base[a].x - base[b].x, dy = base[a].y - base[b].y, dz = base[a].z - base[b].z;
-          dists.push({ b: b, d: dx * dx + dy * dy + dz * dz });
-        }
-        dists.sort(function (p, q) { return p.d - q.d; });
-        for (var k = 0; k < 3; k++) {
-          var bb = dists[k].b;
-          var key = a < bb ? a + '_' + bb : bb + '_' + a;
-          if (!seen[key]) { seen[key] = 1; edges.push([a, bb]); }
-        }
+      faces = ico.F;
+      // floating shards orbiting the crystal (the debris field from the reference)
+      shards = [];
+      var SN = w < 860 ? 14 : 42;
+      for (var s = 0; s < SN; s++) {
+        var th = Math.random() * 6.2832, ph2 = Math.acos(2 * Math.random() - 1);
+        var rad = 1.45 + Math.random() * 1.15;
+        var sz = 0.04 + Math.random() * 0.06;
+        function rv() { return (Math.random() * 2 - 1) * sz; }
+        shards.push({
+          x: Math.sin(ph2) * Math.cos(th) * rad,
+          y: Math.cos(ph2) * rad * 1.15,
+          z: Math.sin(ph2) * Math.sin(th) * rad,
+          a: [rv(), rv(), rv()], b: [rv(), rv(), rv()], c: [rv(), rv(), rv()],
+          ph: Math.random() * 6.28
+        });
       }
-      proj = new Array(N);
+      proj = new Array(verts.length);
       built = true;
     }
 
@@ -174,9 +211,12 @@
       canvas.width = Math.round(w * dpr);
       canvas.height = Math.round(h * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      cx = w / 2; cy = h * 0.46;
-      R = Math.min(w, h) * (w < 720 ? 0.62 : 0.5);
-      if (!built || (w < 720) !== (base.length < 100)) buildGeometry();
+      var narrow = w < 860;
+      // anchor the crystal right-of-centre on wide screens so text reads as a side column
+      cx = narrow ? w * 0.5 : w * 0.64;
+      cy = h * 0.46;
+      R = Math.min(w, h) * (narrow ? 0.34 : 0.30);
+      if (!built || narrow !== lastNarrow) { lastNarrow = narrow; buildGeometry(); }
     }
 
     function onMove(e) {
@@ -186,58 +226,109 @@
     }
     function offMouse() { tiltTX = 0; tiltTY = 0; }
 
-    var CAM = 2.6; // camera distance for perspective
+    var CAM = 2.85; // camera distance for perspective
 
     function draw(t) {
       ctx.clearRect(0, 0, w, h);
       if (!built) return;
       if (!reduce) {
         spinVel *= 0.94;
-        angleY += 0.0032 + spinVel;           // ambient spin + scroll velocity
+        angleY += 0.0026 + spinVel;           // ambient spin + scroll velocity
         tiltX += (tiltTX - tiltX) * 0.05;
         tiltY += (tiltTY - tiltY) * 0.05;
       }
       var aY = angleY + tiltY;
-      var aX = 0.42 + (reduce ? 0 : Math.sin(t * 0.00017) * 0.16) + tiltX;
+      var aX = 0.34 + (reduce ? 0 : Math.sin(t * 0.00015) * 0.14) + tiltX;
       var cosY = Math.cos(aY), sinY = Math.sin(aY), cosX = Math.cos(aX), sinX = Math.sin(aX);
 
-      var i, p, b;
-      for (i = 0; i < base.length; i++) {
-        b = base[i];
-        // rotate Y then X
-        var x1 = b.x * cosY + b.z * sinY;
-        var z1 = -b.x * sinY + b.z * cosY;
-        var y2 = b.y * cosX - z1 * sinX;
-        var z2 = b.y * sinX + z1 * cosX;
-        var persp = CAM / (CAM - z2);
-        proj[i] = {
-          sx: cx + x1 * R * persp,
-          sy: cy + y2 * R * persp,
-          dep: (z2 + 1) / 2,                  // 0 far .. 1 near
-          ph: b.ph
-        };
+      function rot(x, y, z) {
+        var x1 = x * cosY + z * sinY;
+        var z1 = -x * sinY + z * cosY;
+        var y2 = y * cosX - z1 * sinX;
+        var z2 = y * sinX + z1 * cosX;
+        return [x1, y2, z2];
       }
 
-      // edges — depth shaded, so the rotating body reads as solid 3D
-      for (i = 0; i < edges.length; i++) {
-        var pa = proj[edges[i][0]], pb = proj[edges[i][1]];
-        var dep = (pa.dep + pb.dep) / 2;
-        var al = 0.05 + dep * dep * 0.5;
-        var cR = Math.round(70 + dep * 80);
-        var cG = Math.round(110 + dep * 100);
-        var cB = Math.round(190 + dep * 60);
-        ctx.strokeStyle = 'rgba(' + cR + ',' + cG + ',' + cB + ',' + al.toFixed(3) + ')';
-        ctx.lineWidth = 0.6 + dep * 0.9;
-        ctx.beginPath(); ctx.moveTo(pa.sx, pa.sy); ctx.lineTo(pb.sx, pb.sy); ctx.stroke();
+      var i, p, r;
+
+      // glowing core behind the crystal — light leaking through the cracks
+      var coreR = R * 1.35;
+      var pulse = reduce ? 0.5 : (0.46 + 0.07 * Math.sin(t * 0.0009));
+      var g = ctx.createRadialGradient(cx, cy, 0, cx, cy, coreR);
+      g.addColorStop(0, 'rgba(198,233,255,' + pulse.toFixed(3) + ')');
+      g.addColorStop(0.3, 'rgba(110,170,242,0.2)');
+      g.addColorStop(1, 'rgba(20,40,90,0)');
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.arc(cx, cy, coreR, 0, 6.2832); ctx.fill();
+
+      // project crystal vertices (keep rotated 3D coords for face normals)
+      for (i = 0; i < verts.length; i++) {
+        var b = verts[i];
+        r = rot(b.x, b.y, b.z);
+        var persp = CAM / (CAM - r[2]);
+        proj[i] = { rx: r[0], ry: r[1], rz: r[2], sx: cx + r[0] * R * persp, sy: cy + r[1] * R * persp, dep: (r[2] + 1) / 2, ph: b.ph };
       }
-      // nodes — nearer = bigger & brighter, with a faint twinkle
+
+      var Lx = 0.36, Ly = -0.5, Lz = 0.78; // light direction (view space)
+
+      // assemble faces with depth + lighting, paint back-to-front for translucent glass
+      var flist = [];
+      for (i = 0; i < faces.length; i++) {
+        var f = faces[i], A = proj[f[0]], B = proj[f[1]], C = proj[f[2]];
+        var ux = B.rx - A.rx, uy = B.ry - A.ry, uz = B.rz - A.rz;
+        var vx = C.rx - A.rx, vy = C.ry - A.ry, vz = C.rz - A.rz;
+        var nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx;
+        var nl = Math.sqrt(nx * nx + ny * ny + nz * nz) || 1;
+        nx /= nl; ny /= nl; nz /= nl;
+        flist.push({ A: A, B: B, C: C, facing: nx * Lx + ny * Ly + nz * Lz, front: nz, z: (A.rz + B.rz + C.rz) / 3 });
+      }
+      flist.sort(function (p, q) { return p.z - q.z; });
+
+      for (i = 0; i < flist.length; i++) {
+        var fc = flist[i], dep = (fc.z + 1) / 2, lit = fc.facing > 0 ? fc.facing : 0, front = fc.front > 0 ? fc.front : 0;
+        // translucent facet — brighter where it faces the light
+        ctx.beginPath();
+        ctx.moveTo(fc.A.sx, fc.A.sy); ctx.lineTo(fc.B.sx, fc.B.sy); ctx.lineTo(fc.C.sx, fc.C.sy); ctx.closePath();
+        ctx.fillStyle = 'rgba(' + Math.round(40 + lit * 160 + dep * 35) + ',' + Math.round(85 + lit * 155 + dep * 50) + ',' + Math.round(155 + lit * 90 + dep * 60) + ',' + (0.05 + dep * 0.07 + lit * 0.16).toFixed(3) + ')';
+        ctx.fill();
+        // glowing veins along the cracks — strongest on lit, front-facing edges
+        var fl = reduce ? 1 : (0.82 + 0.18 * Math.sin(t * 0.0018 + i));
+        ctx.strokeStyle = 'rgba(' + Math.round(175 + lit * 80) + ',' + Math.round(218 + lit * 37) + ',255,' + ((0.07 + front * 0.66 * (0.5 + lit)) * fl).toFixed(3) + ')';
+        ctx.lineWidth = 0.6 + front * 1.2;
+        ctx.stroke();
+      }
+
+      // bright sparkle on the near-front vertices
       for (i = 0; i < proj.length; i++) {
         p = proj[i];
-        var tw = reduce ? 1 : (0.7 + 0.3 * Math.sin(t * 0.001 + p.ph));
-        var na = (0.15 + p.dep * p.dep * 0.85) * tw;
+        if (p.rz < 0.25) continue;
+        var tw = reduce ? 1 : (0.6 + 0.4 * Math.sin(t * 0.0014 + p.ph));
+        var na = (p.dep - 0.62) * 1.7 * tw;
+        if (na <= 0) continue;
         ctx.beginPath();
-        ctx.fillStyle = 'rgba(' + Math.round(160 + p.dep * 70) + ',' + Math.round(200 + p.dep * 40) + ',255,' + na.toFixed(3) + ')';
-        ctx.arc(p.sx, p.sy, 0.6 + p.dep * 2.0, 0, 6.2832); ctx.fill();
+        ctx.fillStyle = 'rgba(222,240,255,' + Math.min(0.7, na).toFixed(3) + ')';
+        ctx.arc(p.sx, p.sy, 0.6 + p.dep * 1.7, 0, 6.2832); ctx.fill();
+      }
+
+      // floating debris shards
+      for (i = 0; i < shards.length; i++) {
+        var sh = shards[i];
+        var rc = rot(sh.x, sh.y, sh.z);
+        if (rc[2] >= CAM - 0.2) continue;
+        var ra = rot(sh.x + sh.a[0], sh.y + sh.a[1], sh.z + sh.a[2]);
+        var rb = rot(sh.x + sh.b[0], sh.y + sh.b[1], sh.z + sh.b[2]);
+        var rcc = rot(sh.x + sh.c[0], sh.y + sh.c[1], sh.z + sh.c[2]);
+        var pa2 = CAM / (CAM - ra[2]), pb2 = CAM / (CAM - rb[2]), pc2 = CAM / (CAM - rcc[2]);
+        var sdep = (rc[2] + 1) / 2, sal = 0.12 + sdep * 0.5;
+        ctx.beginPath();
+        ctx.moveTo(cx + ra[0] * R * pa2, cy + ra[1] * R * pa2);
+        ctx.lineTo(cx + rb[0] * R * pb2, cy + rb[1] * R * pb2);
+        ctx.lineTo(cx + rcc[0] * R * pc2, cy + rcc[1] * R * pc2);
+        ctx.closePath();
+        ctx.fillStyle = 'rgba(' + Math.round(30 + sdep * 60) + ',' + Math.round(50 + sdep * 90) + ',' + Math.round(95 + sdep * 120) + ',' + (sal * 0.5).toFixed(3) + ')';
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(' + Math.round(150 + sdep * 90) + ',' + Math.round(200 + sdep * 55) + ',255,' + sal.toFixed(3) + ')';
+        ctx.lineWidth = 0.6; ctx.stroke();
       }
     }
 
