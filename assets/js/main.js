@@ -38,11 +38,50 @@
     });
   }
 
-  /* ---------- reveal on scroll ---------- */
+  /* ---------- reveal on scroll (blocks materialise; headings assemble word-by-word) ---------- */
+  function splitWords(el) {
+    // only split plain-text headings (no nested markup) so gradient spans stay intact
+    if (el.getAttribute('data-split') === 'done') return;
+    for (var n = 0; n < el.childNodes.length; n++) {
+      if (el.childNodes[n].nodeType !== 3) return; // has element children → skip
+    }
+    var words = el.textContent.split(/(\s+)/);
+    var frag = document.createDocumentFragment();
+    var idx = 0;
+    words.forEach(function (word) {
+      if (word.trim() === '') { frag.appendChild(document.createTextNode(word)); return; }
+      var wrap = document.createElement('span');
+      wrap.className = 'rw';
+      var inner = document.createElement('i');
+      inner.textContent = word;
+      inner.style.setProperty('--rwd', (idx * 55) + 'ms');
+      wrap.appendChild(inner);
+      frag.appendChild(wrap);
+      idx++;
+    });
+    el.textContent = '';
+    el.appendChild(frag);
+    el.setAttribute('data-split', 'done');
+  }
+
   function initReveal() {
     var els = document.querySelectorAll('[data-reveal]');
     if (!els.length) return;
-    if (!('IntersectionObserver' in window)) {
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // pre-split eligible headings (the block itself, or a heading inside it)
+    if (!reduce) {
+      els.forEach(function (el) {
+        if (el.tagName === 'H1' || el.tagName === 'H2') {
+          splitWords(el);
+        } else {
+          var head = el.querySelector('h1, h2');
+          if (head) splitWords(head);
+        }
+      });
+    }
+
+    if (reduce || !('IntersectionObserver' in window)) {
       els.forEach(function (el) { el.classList.add('in'); });
       return;
     }
