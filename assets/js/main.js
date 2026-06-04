@@ -110,6 +110,14 @@
     }
 
     var MAXD = 150, MAXD2 = MAXD * MAXD;
+    var mx = -9999, my = -9999, MR = 190, MR2 = MR * MR, hasMouse = false;
+
+    function onMove(e) {
+      var r = canvas.getBoundingClientRect();
+      mx = e.clientX - r.left; my = e.clientY - r.top;
+      hasMouse = (mx >= -MR && mx <= w + MR && my >= -MR && my <= h + MR);
+    }
+    function offMouse() { hasMouse = false; mx = my = -9999; }
 
     function draw(t) {
       ctx.clearRect(0, 0, w, h);
@@ -117,6 +125,19 @@
       for (i = 0; i < nodes.length; i++) {
         n = nodes[i];
         if (!reduce) {
+          // gentle attraction toward cursor when nearby
+          if (hasMouse) {
+            var mdx = mx - n.x, mdy = my - n.y, md2 = mdx * mdx + mdy * mdy;
+            if (md2 < MR2 && md2 > 1) {
+              var f = (1 - Math.sqrt(md2) / MR) * 0.06;
+              n.vx += (mdx / Math.sqrt(md2)) * f;
+              n.vy += (mdy / Math.sqrt(md2)) * f;
+            }
+          }
+          // friction keeps motion calm and prevents clumping
+          n.vx *= 0.985; n.vy *= 0.985;
+          var sp = n.vx * n.vx + n.vy * n.vy;
+          if (sp < 0.012) { n.vx += (Math.random() - 0.5) * 0.05; n.vy += (Math.random() - 0.5) * 0.05; }
           n.x += n.vx; n.y += n.vy;
           if (n.x < -30) n.x = w + 30; else if (n.x > w + 30) n.x = -30;
           if (n.y < -30) n.y = h + 30; else if (n.y > h + 30) n.y = -30;
@@ -167,6 +188,24 @@
         ctx.fillStyle = 'rgba(150,205,250,' + (0.6 * tw).toFixed(3) + ')';
         ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2); ctx.fill();
       }
+      // cursor links + glowing focus node
+      if (!reduce && hasMouse) {
+        for (i = 0; i < nodes.length; i++) {
+          n = nodes[i];
+          var cdx = n.x - mx, cdy = n.y - my, cd2 = cdx * cdx + cdy * cdy;
+          if (cd2 < MR2) {
+            var cal = (1 - Math.sqrt(cd2) / MR) * 0.8;
+            ctx.strokeStyle = 'rgba(34,211,238,' + cal.toFixed(3) + ')';
+            ctx.lineWidth = 1.1;
+            ctx.beginPath(); ctx.moveTo(n.x, n.y); ctx.lineTo(mx, my); ctx.stroke();
+          }
+        }
+        var g = ctx.createRadialGradient(mx, my, 0, mx, my, 26);
+        g.addColorStop(0, 'rgba(34,211,238,.5)');
+        g.addColorStop(1, 'rgba(34,211,238,0)');
+        ctx.fillStyle = g;
+        ctx.beginPath(); ctx.arc(mx, my, 26, 0, Math.PI * 2); ctx.fill();
+      }
     }
 
     function loop(t) {
@@ -187,6 +226,11 @@
       clearTimeout(rt);
       rt = setTimeout(function () { build(); draw(0); }, 200);
     });
+    if (!reduce && window.matchMedia && window.matchMedia('(pointer:fine)').matches) {
+      window.addEventListener('pointermove', onMove, { passive: true });
+      window.addEventListener('pointerleave', offMouse, { passive: true });
+      window.addEventListener('blur', offMouse);
+    }
     if ('IntersectionObserver' in window) {
       new IntersectionObserver(function (e) {
         visible = e[0].isIntersecting;
