@@ -108,7 +108,10 @@ img{max-width:100%;display:block}
 .dark::after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;opacity:.05;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
 .grid-fx{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.04) 1px,transparent 1px);background-size:54px 54px;mask-image:radial-gradient(ellipse 80% 60% at 50% 0,#000,transparent 75%);z-index:0}
 /* neural network animated background */
-.neural-bg{position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none;opacity:.72;mask-image:radial-gradient(ellipse 100% 90% at 50% 30%,#000 60%,transparent 100%);-webkit-mask-image:radial-gradient(ellipse 100% 90% at 50% 30%,#000 60%,transparent 100%)}
+.neural-bg{position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none;opacity:.66;mask-image:radial-gradient(ellipse 100% 90% at 50% 30%,#000 60%,transparent 100%);-webkit-mask-image:radial-gradient(ellipse 100% 90% at 50% 30%,#000 60%,transparent 100%)}
+/* readability scrim — darkens the area behind hero copy so text stays legible over the live network */
+.hero::before,.page-hero::before{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:radial-gradient(125% 105% at 26% 42%,rgba(7,8,16,.86) 0,rgba(7,8,16,.5) 42%,rgba(7,8,16,0) 72%)}
+@media (max-width:860px){.hero::before,.page-hero::before{background:radial-gradient(140% 120% at 50% 40%,rgba(7,8,16,.9) 0,rgba(7,8,16,.55) 50%,rgba(7,8,16,0) 80%)}}
 
 /* ---------- hero ---------- */
 .hero{position:relative;padding:84px 0 96px}
@@ -116,7 +119,7 @@ img{max-width:100%;display:block}
 .hero__badge{display:inline-flex;align-items:center;gap:10px;padding:8px 16px;border:1px solid var(--d-line);border-radius:999px;background:rgba(255,255,255,.04);font-size:13.5px;font-weight:600;color:var(--d-ink);margin-bottom:26px}
 .hero__badge i{width:7px;height:7px;border-radius:50%;background:#22d3ee;box-shadow:0 0 0 4px rgba(34,211,238,.18)}
 .hero h1{font-size:clamp(38px,6vw,72px);max-width:16ch}
-.hero p.hero__lead{margin-top:22px;font-size:clamp(17px,2.2vw,21px);color:var(--d-muted);max-width:60ch}
+.hero p.hero__lead{margin-top:22px;font-size:clamp(17px,2.2vw,21px);color:#c4cee0;max-width:60ch;text-shadow:0 1px 16px rgba(2,4,12,.65)}
 .hero__actions{margin-top:38px;display:flex;gap:14px;flex-wrap:wrap}
 .hero__stats{margin-top:58px;display:grid;grid-template-columns:repeat(4,1fr);gap:24px;border-top:1px solid var(--d-line);padding-top:34px}
 .hero__stat b{display:block;font-family:'Space Grotesk',sans-serif;font-size:clamp(28px,4vw,40px);color:#fff;letter-spacing:-.02em}
@@ -200,7 +203,7 @@ img{max-width:100%;display:block}
 /* ---------- CTA band ---------- */
 .cta{position:relative;border-radius:var(--r-lg);overflow:hidden;background:var(--d-bg);color:#fff;padding:62px 56px;text-align:center}
 .cta h2{font-size:clamp(28px,4vw,44px);max-width:20ch;margin:0 auto 16px}
-.cta p{color:var(--d-muted);font-size:18px;max-width:54ch;margin:0 auto 32px}
+.cta p{color:#c4cee0;font-size:18px;max-width:54ch;margin:0 auto 32px}
 .cta .hero__actions{justify-content:center}
 
 /* ---------- page hero (inner pages) ---------- */
@@ -209,7 +212,7 @@ img{max-width:100%;display:block}
 .breadcrumb{display:flex;gap:9px;font-size:13.5px;font-weight:600;color:var(--d-muted);margin-bottom:18px}
 .breadcrumb a:hover{color:#fff}
 .page-hero h1{font-size:clamp(34px,5vw,56px);max-width:18ch}
-.page-hero p{margin-top:18px;font-size:19px;color:var(--d-muted);max-width:62ch}
+.page-hero p{margin-top:18px;font-size:19px;color:#c4cee0;max-width:62ch;text-shadow:0 1px 16px rgba(2,4,12,.65)}
 
 /* ---------- article / prose ---------- */
 .prose{max-width:760px}

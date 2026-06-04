@@ -90,6 +90,8 @@
     var ctx = canvas.getContext('2d');
     var dpr = Math.min(window.devicePixelRatio || 1, 2);
     var w = 0, h = 0, nodes = [], pulses = [], raf = null, visible = true, last = 0;
+    // scroll-driven swirl: the network rotates as the page is scrolled, with a faint ambient spin
+    var swirlVel = 0, lastScrollY = window.pageYOffset || 0;
 
     function build() {
       var rect = canvas.getBoundingClientRect();
@@ -122,9 +124,17 @@
     function draw(t) {
       ctx.clearRect(0, 0, w, h);
       var i, j, n;
+      var cx = w / 2, cy = h / 2;
+      // decay scroll swirl + faint ambient rotation so the field always feels alive
+      swirlVel *= 0.93;
+      var rot = (Math.abs(swirlVel) < 0.00002 ? 0 : swirlVel) + 0.00005;
       for (i = 0; i < nodes.length; i++) {
         n = nodes[i];
         if (!reduce) {
+          // swirl the whole network around its centre (scroll velocity + ambient)
+          var rx = n.x - cx, ry = n.y - cy;
+          n.vx += -ry * rot;
+          n.vy += rx * rot;
           // gentle attraction toward cursor when nearby
           if (hasMouse) {
             var mdx = mx - n.x, mdy = my - n.y, md2 = mdx * mdx + mdy * mdy;
@@ -231,6 +241,15 @@
       window.addEventListener('pointerleave', offMouse, { passive: true });
       window.addEventListener('blur', offMouse);
     }
+    if (!reduce) {
+      window.addEventListener('scroll', function () {
+        var y = window.pageYOffset || 0;
+        swirlVel += (y - lastScrollY) * 0.0000016;
+        lastScrollY = y;
+        if (swirlVel > 0.0004) swirlVel = 0.0004; else if (swirlVel < -0.0004) swirlVel = -0.0004;
+        if (!raf && visible) start();
+      }, { passive: true });
+    }
     if ('IntersectionObserver' in window) {
       new IntersectionObserver(function (e) {
         visible = e[0].isIntersecting;
@@ -249,11 +268,32 @@
     canvases.forEach(function (c) { setupNeural(c, reduce); });
   }
 
+  /* ---------- scroll-driven parallax for the grid layer ---------- */
+  function initScrollFX() {
+    var grids = document.querySelectorAll('.grid-fx');
+    if (!grids.length) return;
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    var ticking = false;
+    function update() {
+      var y = window.pageYOffset || 0;
+      for (var i = 0; i < grids.length; i++) {
+        grids[i].style.transformOrigin = '50% 0';
+        grids[i].style.transform = 'rotate(' + (y * 0.01) + 'deg) scale(' + (1.1 + Math.min(y, 600) * 0.0006) + ')';
+      }
+      ticking = false;
+    }
+    window.addEventListener('scroll', function () {
+      if (!ticking) { window.requestAnimationFrame(update); ticking = true; }
+    }, { passive: true });
+    update();
+  }
+
   document.addEventListener('DOMContentLoaded', function () {
     initNav();
     initReveal();
     initHeader();
     initForm();
     initNeural();
+    initScrollFX();
   });
 })();
