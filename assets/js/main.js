@@ -262,10 +262,27 @@
   }
 
   function initNeural() {
-    var canvases = document.querySelectorAll('.neural-bg');
-    if (!canvases.length) return;
     var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    canvases.forEach(function (c) { setupNeural(c, reduce); });
+    // collapse any per-section canvases into ONE fixed site-wide background
+    var canvases = document.querySelectorAll('.neural-bg');
+    var canvas = canvases[0];
+    for (var i = 1; i < canvases.length; i++) { canvases[i].parentNode.removeChild(canvases[i]); }
+    if (!canvas) {
+      canvas = document.createElement('canvas');
+      canvas.className = 'neural-bg';
+      canvas.setAttribute('aria-hidden', 'true');
+    }
+    canvas.classList.add('neural-bg--fixed');
+    // move it to be the first child of <body> so it sits behind all content
+    document.body.insertBefore(canvas, document.body.firstChild);
+    // soft colour vignette over the network
+    if (!document.querySelector('.site-vignette')) {
+      var vg = document.createElement('div');
+      vg.className = 'site-vignette';
+      vg.setAttribute('aria-hidden', 'true');
+      document.body.insertBefore(vg, canvas.nextSibling);
+    }
+    setupNeural(canvas, reduce);
   }
 
   /* ---------- scroll-driven parallax for the grid layer ---------- */
