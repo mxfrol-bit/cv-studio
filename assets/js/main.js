@@ -79,7 +79,7 @@
       e.preventDefault();
       var name = (form.querySelector('[name="name"]') || {}).value || '';
       var task = (form.querySelector('[name="task"]') || {}).value || '';
-      var tg = form.getAttribute('data-tg') || 'https://t.me/chaos_vision';
+      var tg = form.getAttribute('data-tg') || 'https://t.me/chaosvision_ai';
       var text = encodeURIComponent('Здравствуйте! Меня зовут ' + name + '. Задача: ' + task);
       window.open(tg + '?text=' + text, '_blank');
     });
