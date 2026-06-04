@@ -196,24 +196,28 @@ img{max-width:100%;display:block}
 .step p{color:var(--d-muted);font-size:14.5px}
 
 /* ---------- cases ---------- */
-/* cases — editorial, borderless; images unified into one brand duotone */
-.cases-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:38px 30px}
-.case{position:relative;display:flex;flex-direction:column;transition:transform .35s var(--ease)}
-.case:hover{transform:translateY(-4px)}
-.case__media{position:relative;aspect-ratio:16/10;overflow:hidden;border-radius:14px;background:#000209;border:1px solid var(--line)}
-.case__media img{width:100%;height:100%;object-fit:cover;filter:saturate(1.05) contrast(1.02);transition:transform .6s var(--ease),filter .45s}
-.case:hover .case__media img{transform:scale(1.04);filter:saturate(1.12) contrast(1.04) brightness(1.06)}
-/* arts are already on-brand SVG → only a whisper of gradient to seat them in the page */
-.case__media::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(150deg,rgba(99,102,241,.10),rgba(34,211,238,.06));mix-blend-mode:screen}
-/* subtle bottom fade into the dark page */
-.case__media::before{content:"";position:absolute;left:0;right:0;bottom:0;height:46%;z-index:2;pointer-events:none;background:linear-gradient(180deg,transparent,rgba(2,3,9,.55))}
-.case__body{padding:20px 2px 4px}
-.case__tag{display:inline-block;font-family:var(--font-mono);font-size:11.5px;font-weight:500;color:var(--accent);text-transform:uppercase;letter-spacing:.16em;margin-bottom:12px}
-.case__body h3{font-size:22px;margin-bottom:10px;letter-spacing:-.012em}
-.case__body p{color:var(--ink-2);font-size:15px;line-height:1.6}
-.case__metrics{margin-top:20px;padding-top:18px;border-top:1px solid var(--line);display:flex;gap:36px;flex-wrap:wrap}
-.case__metric b{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:24px;color:var(--ink);display:block;letter-spacing:-.01em}
+/* cases — editorial rows à la reference portfolio sites (steven/borealis/sidewave) */
+.cases-grid{display:flex;flex-direction:column;border-top:1px solid var(--line);counter-reset:cs}
+.case{counter-increment:cs;position:relative;display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center;padding:56px 0;border-bottom:1px solid var(--line);transition:opacity .35s var(--ease)}
+.case:hover{opacity:1}
+.case:nth-child(even) .case__media{order:2}
+.case__media{position:relative;aspect-ratio:16/10;overflow:hidden;border-radius:16px;background:#04060d;border:1px solid var(--line)}
+.case__media img{width:100%;height:100%;object-fit:cover;transition:transform .7s var(--ease)}
+.case:hover .case__media img{transform:scale(1.035)}
+.case__media::after{content:"";position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 80px rgba(2,3,9,.45);border-radius:16px}
+.case__body{position:relative;padding:0}
+.case__body::before{counter-reset:none;content:counter(cs,decimal-leading-zero);display:block;font-family:var(--font-mono);font-size:14px;font-weight:500;color:var(--accent);letter-spacing:.14em;margin-bottom:18px}
+.case__tag{display:inline-block;font-family:var(--font-mono);font-size:12px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.16em;margin-bottom:14px}
+.case__body h3{font-size:31px;line-height:1.12;margin-bottom:16px;letter-spacing:-.018em}
+.case__body p{color:var(--ink-2);font-size:16.5px;line-height:1.62;max-width:48ch}
+.case__metrics{margin-top:30px;padding-top:24px;border-top:1px solid var(--line);display:flex;gap:46px;flex-wrap:wrap}
+.case__metric b{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:27px;color:var(--ink);display:block;letter-spacing:-.01em}
 .case__metric span{font-family:var(--font-mono);font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+@media (max-width:860px){
+  .case{grid-template-columns:1fr;gap:26px;padding:38px 0}
+  .case:nth-child(even) .case__media{order:0}
+  .case__body h3{font-size:25px}
+}
 
 /* ---------- stat band ---------- */
 .statband{display:grid;grid-template-columns:repeat(4,1fr);gap:26px;text-align:center}
