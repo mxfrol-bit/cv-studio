@@ -85,13 +85,48 @@
     });
   }
 
-  /* ---------- neural network background ---------- */
+  /* ---------- 3D rotating mesh background (single mechanism) ---------- */
   function setupNeural(canvas, reduce) {
     var ctx = canvas.getContext('2d');
     var dpr = Math.min(window.devicePixelRatio || 1, 2);
-    var w = 0, h = 0, nodes = [], pulses = [], raf = null, visible = true, last = 0;
-    // scroll-driven swirl: the network rotates as the page is scrolled, with a faint ambient spin
-    var swirlVel = 0, lastScrollY = window.pageYOffset || 0;
+    var w = 0, h = 0, cx = 0, cy = 0, R = 0, raf = null, visible = true, last = 0;
+
+    // rigid 3D structure: points on a sphere (built once), connected to nearest neighbours
+    var base = [], edges = [], proj = [], built = false;
+    // rotation state — one transform applied to the whole body => it turns as a single mechanism
+    var angleY = 0, spinVel = 0, lastScrollY = window.pageYOffset || 0;
+    var tiltX = 0, tiltY = 0, tiltTX = 0, tiltTY = 0; // eased cursor parallax
+
+    function buildGeometry() {
+      var N = w < 720 ? 84 : 132;
+      base = [];
+      var gold = Math.PI * (3 - Math.sqrt(5));
+      for (var i = 0; i < N; i++) {
+        var y = 1 - (i + 0.5) / N * 2;          // -1 .. 1
+        var rr = Math.sqrt(1 - y * y);
+        var th = gold * i;
+        base.push({ x: Math.cos(th) * rr, y: y, z: Math.sin(th) * rr, ph: Math.random() * 6.28 });
+      }
+      // connect each node to its k nearest neighbours (fixed wireframe topology)
+      edges = [];
+      var seen = {};
+      for (var a = 0; a < N; a++) {
+        var dists = [];
+        for (var b = 0; b < N; b++) {
+          if (a === b) continue;
+          var dx = base[a].x - base[b].x, dy = base[a].y - base[b].y, dz = base[a].z - base[b].z;
+          dists.push({ b: b, d: dx * dx + dy * dy + dz * dz });
+        }
+        dists.sort(function (p, q) { return p.d - q.d; });
+        for (var k = 0; k < 3; k++) {
+          var bb = dists[k].b;
+          var key = a < bb ? a + '_' + bb : bb + '_' + a;
+          if (!seen[key]) { seen[key] = 1; edges.push([a, bb]); }
+        }
+      }
+      proj = new Array(N);
+      built = true;
+    }
 
     function build() {
       var rect = canvas.getBoundingClientRect();
@@ -100,121 +135,70 @@
       canvas.width = Math.round(w * dpr);
       canvas.height = Math.round(h * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      var count = Math.max(22, Math.min(80, Math.round(w * h * 0.00008)));
-      nodes = [];
-      for (var i = 0; i < count; i++) {
-        nodes.push({
-          x: Math.random() * w, y: Math.random() * h,
-          vx: (Math.random() - 0.5) * 0.22, vy: (Math.random() - 0.5) * 0.22,
-          r: Math.random() * 1.5 + 0.8, ph: Math.random() * Math.PI * 2
-        });
-      }
+      cx = w / 2; cy = h * 0.46;
+      R = Math.min(w, h) * (w < 720 ? 0.62 : 0.5);
+      if (!built || (w < 720) !== (base.length < 100)) buildGeometry();
     }
-
-    var MAXD = 150, MAXD2 = MAXD * MAXD;
-    var mx = -9999, my = -9999, MR = 190, MR2 = MR * MR, hasMouse = false;
 
     function onMove(e) {
-      var r = canvas.getBoundingClientRect();
-      mx = e.clientX - r.left; my = e.clientY - r.top;
-      hasMouse = (mx >= -MR && mx <= w + MR && my >= -MR && my <= h + MR);
+      // cursor tilts the whole mechanism a little (parallax), eased toward target
+      tiltTY = ((e.clientX - cx) / Math.max(cx, 1)) * 0.5;
+      tiltTX = ((e.clientY - cy) / Math.max(cy, 1)) * 0.35;
     }
-    function offMouse() { hasMouse = false; mx = my = -9999; }
+    function offMouse() { tiltTX = 0; tiltTY = 0; }
+
+    var CAM = 2.6; // camera distance for perspective
 
     function draw(t) {
       ctx.clearRect(0, 0, w, h);
-      var i, j, n;
-      var cx = w / 2, cy = h / 2;
-      // decay scroll swirl + faint ambient rotation so the field always feels alive
-      swirlVel *= 0.93;
-      var rot = (Math.abs(swirlVel) < 0.00002 ? 0 : swirlVel) + 0.00005;
-      for (i = 0; i < nodes.length; i++) {
-        n = nodes[i];
-        if (!reduce) {
-          // swirl the whole network around its centre (scroll velocity + ambient)
-          var rx = n.x - cx, ry = n.y - cy;
-          n.vx += -ry * rot;
-          n.vy += rx * rot;
-          // gentle attraction toward cursor when nearby
-          if (hasMouse) {
-            var mdx = mx - n.x, mdy = my - n.y, md2 = mdx * mdx + mdy * mdy;
-            if (md2 < MR2 && md2 > 1) {
-              var f = (1 - Math.sqrt(md2) / MR) * 0.06;
-              n.vx += (mdx / Math.sqrt(md2)) * f;
-              n.vy += (mdy / Math.sqrt(md2)) * f;
-            }
-          }
-          // friction keeps motion calm and prevents clumping
-          n.vx *= 0.985; n.vy *= 0.985;
-          var sp = n.vx * n.vx + n.vy * n.vy;
-          if (sp < 0.012) { n.vx += (Math.random() - 0.5) * 0.05; n.vy += (Math.random() - 0.5) * 0.05; }
-          n.x += n.vx; n.y += n.vy;
-          if (n.x < -30) n.x = w + 30; else if (n.x > w + 30) n.x = -30;
-          if (n.y < -30) n.y = h + 30; else if (n.y > h + 30) n.y = -30;
-        }
-      }
-      // edges
-      for (i = 0; i < nodes.length; i++) {
-        for (j = i + 1; j < nodes.length; j++) {
-          var a = nodes[i], b = nodes[j];
-          var dx = a.x - b.x, dy = a.y - b.y, d2 = dx * dx + dy * dy;
-          if (d2 < MAXD2) {
-            var al = (1 - Math.sqrt(d2) / MAXD) * 0.45;
-            ctx.strokeStyle = 'rgba(110,150,240,' + al.toFixed(3) + ')';
-            ctx.lineWidth = 1;
-            ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
-          }
-        }
-      }
-      // pulses travelling along edges (sparse "forming" signal)
+      if (!built) return;
       if (!reduce) {
-        if (pulses.length < 5 && Math.random() < 0.03 && nodes.length > 2) {
-          var ai = (Math.random() * nodes.length) | 0;
-          var bi = (Math.random() * nodes.length) | 0;
-          if (ai !== bi) {
-            var na = nodes[ai], nb = nodes[bi];
-            var pdx = na.x - nb.x, pdy = na.y - nb.y;
-            if (pdx * pdx + pdy * pdy < MAXD2 * 2.2) pulses.push({ a: ai, b: bi, p: 0 });
-          }
-        }
-        for (i = pulses.length - 1; i >= 0; i--) {
-          var pu = pulses[i];
-          pu.p += 0.012;
-          if (pu.p >= 1) { pulses.splice(i, 1); continue; }
-          var pa = nodes[pu.a], pb = nodes[pu.b];
-          if (!pa || !pb) { pulses.splice(i, 1); continue; }
-          var px = pa.x + (pb.x - pa.x) * pu.p, py = pa.y + (pb.y - pa.y) * pu.p;
-          var fade = Math.sin(pu.p * Math.PI);
-          ctx.beginPath();
-          ctx.fillStyle = 'rgba(34,211,238,' + (0.9 * fade).toFixed(3) + ')';
-          ctx.arc(px, py, 2, 0, Math.PI * 2); ctx.fill();
-        }
+        spinVel *= 0.94;
+        angleY += 0.0032 + spinVel;           // ambient spin + scroll velocity
+        tiltX += (tiltTX - tiltX) * 0.05;
+        tiltY += (tiltTY - tiltY) * 0.05;
       }
-      // nodes
-      for (i = 0; i < nodes.length; i++) {
-        n = nodes[i];
-        var tw = reduce ? 0.7 : (0.55 + 0.45 * Math.sin(t * 0.0011 + n.ph));
+      var aY = angleY + tiltY;
+      var aX = 0.42 + (reduce ? 0 : Math.sin(t * 0.00017) * 0.16) + tiltX;
+      var cosY = Math.cos(aY), sinY = Math.sin(aY), cosX = Math.cos(aX), sinX = Math.sin(aX);
+
+      var i, p, b;
+      for (i = 0; i < base.length; i++) {
+        b = base[i];
+        // rotate Y then X
+        var x1 = b.x * cosY + b.z * sinY;
+        var z1 = -b.x * sinY + b.z * cosY;
+        var y2 = b.y * cosX - z1 * sinX;
+        var z2 = b.y * sinX + z1 * cosX;
+        var persp = CAM / (CAM - z2);
+        proj[i] = {
+          sx: cx + x1 * R * persp,
+          sy: cy + y2 * R * persp,
+          dep: (z2 + 1) / 2,                  // 0 far .. 1 near
+          ph: b.ph
+        };
+      }
+
+      // edges — depth shaded, so the rotating body reads as solid 3D
+      for (i = 0; i < edges.length; i++) {
+        var pa = proj[edges[i][0]], pb = proj[edges[i][1]];
+        var dep = (pa.dep + pb.dep) / 2;
+        var al = 0.05 + dep * dep * 0.5;
+        var cR = Math.round(70 + dep * 80);
+        var cG = Math.round(110 + dep * 100);
+        var cB = Math.round(190 + dep * 60);
+        ctx.strokeStyle = 'rgba(' + cR + ',' + cG + ',' + cB + ',' + al.toFixed(3) + ')';
+        ctx.lineWidth = 0.6 + dep * 0.9;
+        ctx.beginPath(); ctx.moveTo(pa.sx, pa.sy); ctx.lineTo(pb.sx, pb.sy); ctx.stroke();
+      }
+      // nodes — nearer = bigger & brighter, with a faint twinkle
+      for (i = 0; i < proj.length; i++) {
+        p = proj[i];
+        var tw = reduce ? 1 : (0.7 + 0.3 * Math.sin(t * 0.001 + p.ph));
+        var na = (0.15 + p.dep * p.dep * 0.85) * tw;
         ctx.beginPath();
-        ctx.fillStyle = 'rgba(150,205,250,' + (0.6 * tw).toFixed(3) + ')';
-        ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2); ctx.fill();
-      }
-      // cursor links + glowing focus node
-      if (!reduce && hasMouse) {
-        for (i = 0; i < nodes.length; i++) {
-          n = nodes[i];
-          var cdx = n.x - mx, cdy = n.y - my, cd2 = cdx * cdx + cdy * cdy;
-          if (cd2 < MR2) {
-            var cal = (1 - Math.sqrt(cd2) / MR) * 0.8;
-            ctx.strokeStyle = 'rgba(34,211,238,' + cal.toFixed(3) + ')';
-            ctx.lineWidth = 1.1;
-            ctx.beginPath(); ctx.moveTo(n.x, n.y); ctx.lineTo(mx, my); ctx.stroke();
-          }
-        }
-        var g = ctx.createRadialGradient(mx, my, 0, mx, my, 26);
-        g.addColorStop(0, 'rgba(34,211,238,.5)');
-        g.addColorStop(1, 'rgba(34,211,238,0)');
-        ctx.fillStyle = g;
-        ctx.beginPath(); ctx.arc(mx, my, 26, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = 'rgba(' + Math.round(160 + p.dep * 70) + ',' + Math.round(200 + p.dep * 40) + ',255,' + na.toFixed(3) + ')';
+        ctx.arc(p.sx, p.sy, 0.6 + p.dep * 2.0, 0, 6.2832); ctx.fill();
       }
     }
 
@@ -244,9 +228,9 @@
     if (!reduce) {
       window.addEventListener('scroll', function () {
         var y = window.pageYOffset || 0;
-        swirlVel += (y - lastScrollY) * 0.0000016;
+        spinVel += (y - lastScrollY) * 0.00002;
         lastScrollY = y;
-        if (swirlVel > 0.0004) swirlVel = 0.0004; else if (swirlVel < -0.0004) swirlVel = -0.0004;
+        if (spinVel > 0.05) spinVel = 0.05; else if (spinVel < -0.05) spinVel = -0.05;
         if (!raf && visible) start();
       }, { passive: true });
     }
