@@ -42,6 +42,17 @@ def txt(x, y, s, size=22, fill=INK, mono=True, weight=500, anchor="start", ls=0.
 def dot(x, y, r, fill, op=1.0):
     return f'<circle cx="{x:.1f}" cy="{y:.1f}" r="{r:.1f}" fill="{fill}" opacity="{op:.3f}"/>'
 
+def vbar_anim(x, cy, h, col, op, delay, lo=0.42, dur=2.0):
+    """Вертикальный бар, «дышащий» вокруг центра — для волны звонка."""
+    y0 = cy - h/2; h1 = h*lo; y1 = cy - h1/2
+    ks = "0.4 0 0.2 1;0.4 0 0.2 1"
+    return (f'<rect x="{x:.1f}" y="{y0:.1f}" width="6" height="{h:.1f}" rx="3" fill="{col}" opacity="{op:.2f}">'
+            f'<animate attributeName="height" values="{h:.1f};{h1:.1f};{h:.1f}" dur="{dur}s" '
+            f'begin="{delay:.2f}s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.5;1" keySplines="{ks}"/>'
+            f'<animate attributeName="y" values="{y0:.1f};{y1:.1f};{y0:.1f}" dur="{dur}s" '
+            f'begin="{delay:.2f}s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.5;1" keySplines="{ks}"/>'
+            f'</rect>')
+
 def line(x1, y1, x2, y2, stroke=LINE, sw=1.2, op=1.0, dash=None):
     d = f' stroke-dasharray="{dash}"' if dash else ""
     return (f'<line x1="{x1:.1f}" y1="{y1:.1f}" x2="{x2:.1f}" y2="{y2:.1f}" '
@@ -97,7 +108,8 @@ def scene_voice():
         env = math.sin(i / n * math.pi)
         hgt = (18 + 150 * env * (0.35 + 0.65 * rng.random()))
         col = CY if i % 3 else IN
-        s.append(rrect(x, cy - hgt/2, 6, hgt, 3, col, op=0.30 + 0.55*env))
+        s.append(vbar_anim(x, cy, hgt, col, 0.30 + 0.55*env,
+                           delay=(i % 16) * 0.06, lo=0.40 + 0.25*rng.random(), dur=1.9))
     # кнопки
     s.append(rrect(130, 560, 200, 60, 14, "url(#grad)")); s.append(txt(230, 598, "ОТВЕТ", 18, "#04060d", anchor="middle", weight=600))
     s.append(rrect(350, 560, 200, 60, 14, "rgba(255,255,255,0.04)", LINE)); s.append(txt(450, 598, "ЗАМЕТКА", 16, SUB, anchor="middle"))
@@ -140,8 +152,12 @@ def scene_content():
             cc, ccw = chip(x+24, y+ch_-56, "SEO", CY, 0.12); s.append(cc)
             s.append(txt(x+cw_-26, y+ch_-32, dates[idx], 14, CY if active else MUT, anchor="end"))
             if active:
-                s.append(bar(x+24, y+ch_-92, cw_-48, 6, "rgba(255,255,255,0.06)"))
-                s.append(bar(x+24, y+ch_-92, (cw_-48)*0.62, 6, "url(#grad)"))
+                full = cw_-48
+                s.append(bar(x+24, y+ch_-92, full, 6, "rgba(255,255,255,0.06)"))
+                s.append(f'<rect x="{x+24:.1f}" y="{y+ch_-92:.1f}" width="{full*0.15:.1f}" height="6" rx="3" fill="url(#grad)">'
+                         f'<animate attributeName="width" values="{full*0.12:.1f};{full*0.92:.1f};{full*0.12:.1f}" '
+                         f'dur="3.2s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.7;1" '
+                         f'keySplines="0.3 0 0.3 1;0.5 0 0.5 1"/></rect>')
     return frame("\n".join(s))
 
 def scene_rag():
@@ -277,14 +293,21 @@ def scene_agents():
     }
     NW, NH = 230, 104
     def center(n): x, y, *_ = nodes[n]; return (x+NW/2, y+NH/2)
-    def wire(a, b):
+    def wire(a, b, delay=0.0):
         ax, ay = center(a); bx, by = center(b)
         ax += NW/2; bx -= NW/2
         mx = (ax+bx)/2
-        return (f'<path d="M{ax:.0f} {ay:.0f} C {mx:.0f} {ay:.0f}, {mx:.0f} {by:.0f}, {bx-8:.0f} {by:.0f}" '
-                f'fill="none" stroke="{CY}" stroke-width="2.2" opacity="0.7" marker-end="url(#arw)"/>')
-    for a, b in [("trigger","agent"),("agent","tool"),("agent","db"),("tool","out"),("db","out")]:
-        s.append(wire(a, b))
+        d = f"M{ax:.0f} {ay:.0f} C {mx:.0f} {ay:.0f}, {mx:.0f} {by:.0f}, {bx-8:.0f} {by:.0f}"
+        base = (f'<path d="{d}" fill="none" stroke="{CY}" stroke-width="2.2" '
+                f'opacity="0.55" marker-end="url(#arw)"/>')
+        # бегущий импульс по проводу
+        pulse = (f'<path d="{d}" fill="none" stroke="#aef3ff" stroke-width="3" stroke-linecap="round" '
+                 f'stroke-dasharray="16 460" opacity="0.9">'
+                 f'<animate attributeName="stroke-dashoffset" values="476;0" dur="2.4s" '
+                 f'begin="{delay:.2f}s" repeatCount="indefinite"/></path>')
+        return base + pulse
+    for k, (a, b) in enumerate([("trigger","agent"),("agent","tool"),("agent","db"),("tool","out"),("db","out")]):
+        s.append(wire(a, b, delay=k*0.4))
     for key, (x, y, label, col, active) in nodes.items():
         if active:
             s.append(rrect(x-6, y-6, NW+12, NH+12, 20, "none", "rgba(34,211,238,0.25)", 2))
