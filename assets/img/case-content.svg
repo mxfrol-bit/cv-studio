@@ -19,46 +19,46 @@
 <rect x="1330.0" y="50.0" width="200.0" height="40.0" rx="12.0" fill="url(#grad)"/>
 <text x="1430.0" y="76.0" font-family="'JetBrains Mono',ui-monospace,monospace" font-size="16" font-weight="600" fill="#04060d" text-anchor="middle">+ GENERATE</text>
 <rect x="70.0" y="130.0" width="464.0" height="383.0" rx="18.0" fill="#0d1428" stroke="rgba(255,255,255,0.10)" stroke-width="1.20"/>
-<rect x="92.0" y="152.0" width="420.0" height="191.5" rx="12.0" fill="rgba(99,102,241,0.16)" stroke="rgba(255,255,255,0.055)" stroke-width="1.20"/>
-<circle cx="302.0" cy="247.8" r="22.0" fill="url(#grad)" opacity="0.500"/>
-<rect x="92.0" y="361.5" width="384.0" height="13.0" rx="6.5" fill="#e9eefb" opacity="0.850"/>
-<rect x="92.0" y="387.5" width="314.0" height="11.0" rx="5.5" fill="#9aa6c2" opacity="0.600"/>
-<rect x="92.0" y="455.0" width="60.5" height="34.0" rx="17.0" fill="rgba(34,211,238,0.12)" stroke="#22d3ee" stroke-width="1.20" opacity="0.900"/><text x="122.2" y="478.0" font-family="'JetBrains Mono',ui-monospace,monospace" font-size="15" font-weight="500" fill="#22d3ee" text-anchor="middle" letter-spacing="1.5">SEO</text>
-<rect x="414.0" y="467.0" width="90.0" height="10.0" rx="5.0" fill="#586280" opacity="0.700"/>
+<rect x="92.0" y="152.0" width="420.0" height="176.2" rx="12.0" fill="rgba(99,102,241,0.16)" stroke="rgba(255,255,255,0.055)" stroke-width="1.20"/>
+<circle cx="302.0" cy="240.1" r="22.0" fill="url(#grad)" opacity="0.500"/>
+<text x="94.0" y="364.2" font-family="'Space Grotesk','Inter',system-ui,sans-serif" font-size="20" font-weight="600" fill="#e9eefb">Имплантация зубов: цены</text>
+<rect x="94.0" y="384.2" width="314.0" height="10.0" rx="5.0" fill="#9aa6c2" opacity="0.500"/>
+<rect x="94.0" y="457.0" width="60.5" height="34.0" rx="17.0" fill="rgba(34,211,238,0.12)" stroke="#22d3ee" stroke-width="1.20" opacity="0.900"/><text x="124.2" y="480.0" font-family="'JetBrains Mono',ui-monospace,monospace" font-size="15" font-weight="500" fill="#22d3ee" text-anchor="middle" letter-spacing="1.5">SEO</text>
+<text x="508.0" y="481.0" font-family="'JetBrains Mono',ui-monospace,monospace" font-size="14" font-weight="500" fill="#586280" text-anchor="end">сегодня</text>
 <rect x="568.0" y="130.0" width="464.0" height="383.0" rx="18.0" fill="#0d1428" stroke="#22d3ee" stroke-width="1.60"/>
-<rect x="590.0" y="152.0" width="420.0" height="191.5" rx="12.0" fill="rgba(99,102,241,0.16)" stroke="rgba(255,255,255,0.055)" stroke-width="1.20"/>
-<circle cx="800.0" cy="247.8" r="22.0" fill="url(#grad)" opacity="0.500"/>
-<rect x="590.0" y="361.5" width="384.0" height="13.0" rx="6.5" fill="#e9eefb" opacity="0.850"/>
-<rect x="590.0" y="387.5" width="314.0" height="11.0" rx="5.5" fill="#9aa6c2" opacity="0.600"/>
-<rect x="590.0" y="455.0" width="60.5" height="34.0" rx="17.0" fill="rgba(34,211,238,0.12)" stroke="#22d3ee" stroke-width="1.20" opacity="0.900"/><text x="620.2" y="478.0" font-family="'JetBrains Mono',ui-monospace,monospace" font-size="15" font-weight="500" fill="#22d3ee" text-anchor="middle" letter-spacing="1.5">SEO</text>
-<rect x="912.0" y="467.0" width="90.0" height="10.0" rx="5.0" fill="#586280" opacity="0.700"/>
-<rect x="590.0" y="421.0" width="420.0" height="6.0" rx="3.0" fill="rgba(255,255,255,0.06)"/>
-<rect x="590.0" y="421.0" width="260.4" height="6.0" rx="3.0" fill="url(#grad)"/>
+<rect x="590.0" y="152.0" width="420.0" height="176.2" rx="12.0" fill="rgba(99,102,241,0.16)" stroke="rgba(255,255,255,0.055)" stroke-width="1.20"/>
+<circle cx="800.0" cy="240.1" r="22.0" fill="url(#grad)" opacity="0.500"/>
+<text x="592.0" y="364.2" font-family="'Space Grotesk','Inter',system-ui,sans-serif" font-size="20" font-weight="600" fill="#e9eefb">Как выбрать стоматолога</text>
+<rect x="592.0" y="384.2" width="314.0" height="10.0" rx="5.0" fill="#9aa6c2" opacity="0.500"/>
+<rect x="592.0" y="457.0" width="60.5" height="34.0" rx="17.0" fill="rgba(34,211,238,0.12)" stroke="#22d3ee" stroke-width="1.20" opacity="0.900"/><text x="622.2" y="480.0" font-family="'JetBrains Mono',ui-monospace,monospace" font-size="15" font-weight="500" fill="#22d3ee" text-anchor="middle" letter-spacing="1.5">SEO</text>
+<text x="1006.0" y="481.0" font-family="'JetBrains Mono',ui-monospace,monospace" font-size="14" font-weight="500" fill="#22d3ee" text-anchor="end">генерация…</text>
+<rect x="592.0" y="421.0" width="416.0" height="6.0" rx="3.0" fill="rgba(255,255,255,0.06)"/>
+<rect x="592.0" y="421.0" width="257.9" height="6.0" rx="3.0" fill="url(#grad)"/>
 <rect x="1066.0" y="130.0" width="464.0" height="383.0" rx="18.0" fill="#0d1428" stroke="rgba(255,255,255,0.10)" stroke-width="1.20"/>
-<rect x="1088.0" y="152.0" width="420.0" height="191.5" rx="12.0" fill="rgba(99,102,241,0.16)" stroke="rgba(255,255,255,0.055)" stroke-width="1.20"/>
-<circle cx="1298.0" cy="247.8" r="22.0" fill="url(#grad)" opacity="0.500"/>
-<rect x="1088.0" y="361.5" width="384.0" height="13.0" rx="6.5" fill="#e9eefb" opacity="0.850"/>
-<rect x="1088.0" y="387.5" width="314.0" height="11.0" rx="5.5" fill="#9aa6c2" opacity="0.600"/>
-<rect x="1088.0" y="455.0" width="60.5" height="34.0" rx="17.0" fill="rgba(34,211,238,0.12)" stroke="#22d3ee" stroke-width="1.20" opacity="0.900"/><text x="1118.2" y="478.0" font-family="'JetBrains Mono',ui-monospace,monospace" font-size="15" font-weight="500" fill="#22d3ee" text-anchor="middle" letter-spacing="1.5">SEO</text>
-<rect x="1410.0" y="467.0" width="90.0" height="10.0" rx="5.0" fill="#586280" opacity="0.700"/>
+<rect x="1088.0" y="152.0" width="420.0" height="176.2" rx="12.0" fill="rgba(99,102,241,0.16)" stroke="rgba(255,255,255,0.055)" stroke-width="1.20"/>
+<circle cx="1298.0" cy="240.1" r="22.0" fill="url(#grad)" opacity="0.500"/>
+<text x="1090.0" y="364.2" font-family="'Space Grotesk','Inter',system-ui,sans-serif" font-size="20" font-weight="600" fill="#e9eefb">Брекеты или элайнеры</text>
+<rect x="1090.0" y="384.2" width="314.0" height="10.0" rx="5.0" fill="#9aa6c2" opacity="0.500"/>
+<rect x="1090.0" y="457.0" width="60.5" height="34.0" rx="17.0" fill="rgba(34,211,238,0.12)" stroke="#22d3ee" stroke-width="1.20" opacity="0.900"/><text x="1120.2" y="480.0" font-family="'JetBrains Mono',ui-monospace,monospace" font-size="15" font-weight="500" fill="#22d3ee" text-anchor="middle" letter-spacing="1.5">SEO</text>
+<text x="1504.0" y="481.0" font-family="'JetBrains Mono',ui-monospace,monospace" font-size="14" font-weight="500" fill="#586280" text-anchor="end">вчера</text>
 <rect x="70.0" y="547.0" width="464.0" height="383.0" rx="18.0" fill="#0d1428" stroke="rgba(255,255,255,0.10)" stroke-width="1.20"/>
-<rect x="92.0" y="569.0" width="420.0" height="191.5" rx="12.0" fill="rgba(99,102,241,0.16)" stroke="rgba(255,255,255,0.055)" stroke-width="1.20"/>
-<circle cx="302.0" cy="664.8" r="22.0" fill="url(#grad)" opacity="0.500"/>
-<rect x="92.0" y="778.5" width="384.0" height="13.0" rx="6.5" fill="#e9eefb" opacity="0.850"/>
-<rect x="92.0" y="804.5" width="314.0" height="11.0" rx="5.5" fill="#9aa6c2" opacity="0.600"/>
-<rect x="92.0" y="872.0" width="60.5" height="34.0" rx="17.0" fill="rgba(34,211,238,0.12)" stroke="#22d3ee" stroke-width="1.20" opacity="0.900"/><text x="122.2" y="895.0" font-family="'JetBrains Mono',ui-monospace,monospace" font-size="15" font-weight="500" fill="#22d3ee" text-anchor="middle" letter-spacing="1.5">SEO</text>
-<rect x="414.0" y="884.0" width="90.0" height="10.0" rx="5.0" fill="#586280" opacity="0.700"/>
+<rect x="92.0" y="569.0" width="420.0" height="176.2" rx="12.0" fill="rgba(99,102,241,0.16)" stroke="rgba(255,255,255,0.055)" stroke-width="1.20"/>
+<circle cx="302.0" cy="657.1" r="22.0" fill="url(#grad)" opacity="0.500"/>
+<text x="94.0" y="781.2" font-family="'Space Grotesk','Inter',system-ui,sans-serif" font-size="20" font-weight="600" fill="#e9eefb">Отбеливание: 5 способов</text>
+<rect x="94.0" y="801.2" width="314.0" height="10.0" rx="5.0" fill="#9aa6c2" opacity="0.500"/>
+<rect x="94.0" y="874.0" width="60.5" height="34.0" rx="17.0" fill="rgba(34,211,238,0.12)" stroke="#22d3ee" stroke-width="1.20" opacity="0.900"/><text x="124.2" y="897.0" font-family="'JetBrains Mono',ui-monospace,monospace" font-size="15" font-weight="500" fill="#22d3ee" text-anchor="middle" letter-spacing="1.5">SEO</text>
+<text x="508.0" y="898.0" font-family="'JetBrains Mono',ui-monospace,monospace" font-size="14" font-weight="500" fill="#586280" text-anchor="end">2 дня назад</text>
 <rect x="568.0" y="547.0" width="464.0" height="383.0" rx="18.0" fill="#0d1428" stroke="rgba(255,255,255,0.10)" stroke-width="1.20"/>
-<rect x="590.0" y="569.0" width="420.0" height="191.5" rx="12.0" fill="rgba(99,102,241,0.16)" stroke="rgba(255,255,255,0.055)" stroke-width="1.20"/>
-<circle cx="800.0" cy="664.8" r="22.0" fill="url(#grad)" opacity="0.500"/>
-<rect x="590.0" y="778.5" width="384.0" height="13.0" rx="6.5" fill="#e9eefb" opacity="0.850"/>
-<rect x="590.0" y="804.5" width="314.0" height="11.0" rx="5.5" fill="#9aa6c2" opacity="0.600"/>
-<rect x="590.0" y="872.0" width="60.5" height="34.0" rx="17.0" fill="rgba(34,211,238,0.12)" stroke="#22d3ee" stroke-width="1.20" opacity="0.900"/><text x="620.2" y="895.0" font-family="'JetBrains Mono',ui-monospace,monospace" font-size="15" font-weight="500" fill="#22d3ee" text-anchor="middle" letter-spacing="1.5">SEO</text>
-<rect x="912.0" y="884.0" width="90.0" height="10.0" rx="5.0" fill="#586280" opacity="0.700"/>
+<rect x="590.0" y="569.0" width="420.0" height="176.2" rx="12.0" fill="rgba(99,102,241,0.16)" stroke="rgba(255,255,255,0.055)" stroke-width="1.20"/>
+<circle cx="800.0" cy="657.1" r="22.0" fill="url(#grad)" opacity="0.500"/>
+<text x="592.0" y="781.2" font-family="'Space Grotesk','Inter',system-ui,sans-serif" font-size="20" font-weight="600" fill="#e9eefb">Лечение кариеса без боли</text>
+<rect x="592.0" y="801.2" width="314.0" height="10.0" rx="5.0" fill="#9aa6c2" opacity="0.500"/>
+<rect x="592.0" y="874.0" width="60.5" height="34.0" rx="17.0" fill="rgba(34,211,238,0.12)" stroke="#22d3ee" stroke-width="1.20" opacity="0.900"/><text x="622.2" y="897.0" font-family="'JetBrains Mono',ui-monospace,monospace" font-size="15" font-weight="500" fill="#22d3ee" text-anchor="middle" letter-spacing="1.5">SEO</text>
+<text x="1006.0" y="898.0" font-family="'JetBrains Mono',ui-monospace,monospace" font-size="14" font-weight="500" fill="#586280" text-anchor="end">3 дня назад</text>
 <rect x="1066.0" y="547.0" width="464.0" height="383.0" rx="18.0" fill="#0d1428" stroke="rgba(255,255,255,0.10)" stroke-width="1.20"/>
-<rect x="1088.0" y="569.0" width="420.0" height="191.5" rx="12.0" fill="rgba(99,102,241,0.16)" stroke="rgba(255,255,255,0.055)" stroke-width="1.20"/>
-<circle cx="1298.0" cy="664.8" r="22.0" fill="url(#grad)" opacity="0.500"/>
-<rect x="1088.0" y="778.5" width="384.0" height="13.0" rx="6.5" fill="#e9eefb" opacity="0.850"/>
-<rect x="1088.0" y="804.5" width="314.0" height="11.0" rx="5.5" fill="#9aa6c2" opacity="0.600"/>
-<rect x="1088.0" y="872.0" width="60.5" height="34.0" rx="17.0" fill="rgba(34,211,238,0.12)" stroke="#22d3ee" stroke-width="1.20" opacity="0.900"/><text x="1118.2" y="895.0" font-family="'JetBrains Mono',ui-monospace,monospace" font-size="15" font-weight="500" fill="#22d3ee" text-anchor="middle" letter-spacing="1.5">SEO</text>
-<rect x="1410.0" y="884.0" width="90.0" height="10.0" rx="5.0" fill="#586280" opacity="0.700"/></svg>
+<rect x="1088.0" y="569.0" width="420.0" height="176.2" rx="12.0" fill="rgba(99,102,241,0.16)" stroke="rgba(255,255,255,0.055)" stroke-width="1.20"/>
+<circle cx="1298.0" cy="657.1" r="22.0" fill="url(#grad)" opacity="0.500"/>
+<text x="1090.0" y="781.2" font-family="'Space Grotesk','Inter',system-ui,sans-serif" font-size="20" font-weight="600" fill="#e9eefb">Гигиена и чистка зубов</text>
+<rect x="1090.0" y="801.2" width="314.0" height="10.0" rx="5.0" fill="#9aa6c2" opacity="0.500"/>
+<rect x="1090.0" y="874.0" width="60.5" height="34.0" rx="17.0" fill="rgba(34,211,238,0.12)" stroke="#22d3ee" stroke-width="1.20" opacity="0.900"/><text x="1120.2" y="897.0" font-family="'JetBrains Mono',ui-monospace,monospace" font-size="15" font-weight="500" fill="#22d3ee" text-anchor="middle" letter-spacing="1.5">SEO</text>
+<text x="1504.0" y="898.0" font-family="'JetBrains Mono',ui-monospace,monospace" font-size="14" font-weight="500" fill="#586280" text-anchor="end">5 дней назад</text></svg>

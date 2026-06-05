@@ -86,9 +86,10 @@ def scene_voice():
     s.append(rrect(70, 120, 1460, 540, 22, PANEL, LINE))
     # контакт
     s.append(dot(170, 230, 40, "url(#grad)"))
-    s.append(bar(240, 200, 240, 18, INK)); s.append(bar(240, 236, 150, 11, MUT))
-    c, cw = chip(1180, 196, "QUALIFIED", CY); s.append(c)
-    s.append(txt(1460, 236, "02:14", 30, INK, anchor="end"))
+    s.append(txt(232, 222, "Алексей · ООО «Вектор»", 26, INK, mono=False, weight=600))
+    s.append(txt(232, 254, "входящий лид · из CRM", 17, MUT))
+    c, cw = chip(1170, 196, "КВАЛИФИЦИРОВАН", CY); s.append(c)
+    s.append(txt(1460, 254, "02:14", 30, INK, anchor="end"))
     # волна
     n = 96; x0, x1 = 130, 1470; cy = 430
     for i in range(n):
@@ -102,11 +103,14 @@ def scene_voice():
     s.append(rrect(350, 560, 200, 60, 14, "rgba(255,255,255,0.04)", LINE)); s.append(txt(450, 598, "ЗАМЕТКА", 16, SUB, anchor="middle"))
     # транскрипт
     s.append(rrect(70, 700, 1460, 230, 22, PANEL2, LINE2))
-    for i in range(3):
-        y = 752 + i*54
-        s.append(dot(110, y-6, 7, CY if i % 2 else IN))
-        s.append(bar(140, y-14, 110, 12, SUB, op=.8))
-        s.append(bar(270, y-14, 900 + (i*60 % 300), 12, "rgba(255,255,255,0.13)"))
+    rows = [("АГЕНТ", IN, "Здравствуйте! Подберём решение под вашу задачу."),
+            ("КЛИЕНТ", CY, "Да, расскажите подробнее про сроки и цену."),
+            ("АГЕНТ", IN, "Передаю менеджеру — перезвонит в течение часа.")]
+    for i, (who, col, line_t) in enumerate(rows):
+        y = 760 + i*56
+        s.append(dot(108, y-6, 6, col))
+        s.append(txt(128, y, who, 15, col, ls=1.5))
+        s.append(txt(250, y, line_t, 19, "#c4cde2", mono=False))
     return frame("\n".join(s))
 
 def scene_content():
@@ -116,6 +120,10 @@ def scene_content():
     s.append(rrect(1330, 50, 200, 40, 12, "url(#grad)")); s.append(txt(1430, 76, "+ GENERATE", 16, "#04060d", anchor="middle", weight=600))
     cols, rows = 3, 2; gx, gy = 70, 130; gw, gh = 1460, 800; gap = 34
     cw_ = (gw - gap*(cols-1))/cols; ch_ = (gh - gap*(rows-1))/rows
+    titles = ["Имплантация зубов: цены", "Как выбрать стоматолога",
+              "Брекеты или элайнеры", "Отбеливание: 5 способов",
+              "Лечение кариеса без боли", "Гигиена и чистка зубов"]
+    dates = ["сегодня", "генерация…", "вчера", "2 дня назад", "3 дня назад", "5 дней назад"]
     for r in range(rows):
         for col in range(cols):
             idx = r*cols + col
@@ -123,17 +131,17 @@ def scene_content():
             active = (idx == 1)
             s.append(rrect(x, y, cw_, ch_, 18, CARD, CY if active else LINE, sw=1.6 if active else 1.2))
             # превью-картинка
-            s.append(rrect(x+22, y+22, cw_-44, ch_*0.5, 12, "rgba(99,102,241,0.16)", LINE2))
-            s.append(dot(x+cw_/2, y+22+ch_*0.25, 22, "url(#grad)", 0.5))
-            # заголовок-бары
-            s.append(bar(x+22, y+ch_*0.5+40, cw_-80, 13, INK, op=.85))
-            s.append(bar(x+22, y+ch_*0.5+66, cw_-150, 11, SUB, op=.6))
+            s.append(rrect(x+22, y+22, cw_-44, ch_*0.46, 12, "rgba(99,102,241,0.16)", LINE2))
+            s.append(dot(x+cw_/2, y+22+ch_*0.23, 22, "url(#grad)", 0.5))
+            # реальный заголовок
+            s.append(txt(x+24, y+ch_*0.46+58, titles[idx], 20, INK, mono=False, weight=600))
+            s.append(bar(x+24, y+ch_*0.46+78, cw_-150, 10, SUB, op=.5))
             # чип + дата
-            cc, ccw = chip(x+22, y+ch_-58, "SEO", CY, 0.12); s.append(cc)
-            s.append(bar(x+cw_-120, y+ch_-46, 90, 10, MUT, op=.7))
+            cc, ccw = chip(x+24, y+ch_-56, "SEO", CY, 0.12); s.append(cc)
+            s.append(txt(x+cw_-26, y+ch_-32, dates[idx], 14, CY if active else MUT, anchor="end"))
             if active:
-                s.append(bar(x+22, y+ch_-92, cw_-44, 6, "rgba(255,255,255,0.06)"))
-                s.append(bar(x+22, y+ch_-92, (cw_-44)*0.62, 6, "url(#grad)"))
+                s.append(bar(x+24, y+ch_-92, cw_-48, 6, "rgba(255,255,255,0.06)"))
+                s.append(bar(x+24, y+ch_-92, (cw_-48)*0.62, 6, "url(#grad)"))
     return frame("\n".join(s))
 
 def scene_rag():
@@ -149,6 +157,12 @@ def scene_rag():
     s.append(txt(1380, 200, "СТАТУС", 16, MUT, ls=2))
     s.append(line(70, 220, 1530, 220, LINE2, 1))
     rels = [94, 88, 71, 63, 41, 28]; match = [True, True, False, False, False, False]
+    names = [("Кровельные работы · школа №12", "44-ФЗ · 4,2 млн ₽"),
+             ("Поставка ИБП · городская больница", "223-ФЗ · 1,8 млн ₽"),
+             ("Ремонт фасада · ДК «Юбилейный»", "44-ФЗ · 6,1 млн ₽"),
+             ("Монтаж ИТП · жилой комплекс", "223-ФЗ · 3,0 млн ₽"),
+             ("Благоустройство двора", "44-ФЗ · 0,9 млн ₽"),
+             ("Замена окон · детский сад №7", "44-ФЗ · 1,3 млн ₽")]
     for i, rel in enumerate(rels):
         y = 250 + i*108
         if match[i]:
@@ -156,8 +170,8 @@ def scene_rag():
             s.append(rrect(70, y, 6, 88, 3, CY))
         else:
             s.append(line(70, y+88, 1530, y+88, LINE2, 1))
-        s.append(bar(100, y+34, 520, 14, INK, op=.85))
-        s.append(bar(100, y+60, 360, 10, MUT, op=.6))
+        s.append(txt(102, y+38, names[i][0], 21, INK, mono=False, weight=500))
+        s.append(txt(102, y+66, names[i][1], 15, MUT))
         # шкала
         s.append(rrect(980, y+38, 280, 10, 5, "rgba(255,255,255,0.07)"))
         s.append(rrect(980, y+38, 280*rel/100, 10, 5, "url(#grad)"))
@@ -175,35 +189,40 @@ def scene_assistant():
     s.append(txt(110, 160, "DAILY DIGEST", 22, INK, ls=2, weight=600))
     c, cw = chip(560, 132, "LOCAL", CY); s.append(c)
     s.append(f'<path d="M650 138 v-8 a8 8 0 0 1 16 0 v8" fill="none" stroke="{CY}" stroke-width="2"/>')
-    for i in range(5):
-        y = 240 + i*84
-        s.append(dot(120, y, 6, CY if i % 2 else IN))
-        s.append(bar(150, y-9, 540 - (i*40 % 200), 13, INK, op=.8))
-        s.append(bar(150, y+14, 420 - (i*55 % 180), 10, SUB, op=.5))
+    digest = ["3 задачи с дедлайном сегодня", "Отчёт по продажам за неделю готов",
+              "2 договора ждут подписи", "Встреча с инвестором в 15:00",
+              "Расход бюджета Q3 — в норме"]
+    for i, d in enumerate(digest):
+        y = 248 + i*82
+        s.append(dot(120, y-6, 6, CY if i % 2 else IN))
+        s.append(txt(146, y, d, 19, "#dbe2f2", mono=False))
+        s.append(bar(146, y+20, 300 - (i*40 % 140), 9, SUB, op=.4))
     s.append(line(110, 700, 720, 700, LINE2, 1))
-    for i in range(2):
-        y = 750 + i*64
+    tasks = ["Согласовать смету проекта", "Ответить юристу по договору"]
+    for i, tname in enumerate(tasks):
+        y = 752 + i*60
         s.append(rrect(110, y-22, 26, 26, 6, "none", CY, 1.6))
         s.append(line(116, y-9, 123, y-2, CY, 2)); s.append(line(123, y-2, 132, y-16, CY, 2))
-        s.append(bar(156, y-13, 460, 12, SUB, op=.7))
+        s.append(txt(156, y-4, tname, 18, SUB, mono=False))
     # чат
     s.append(rrect(800, 90, 730, 820, 22, PANEL2, LINE2))
     s.append(dot(840, 138, 6, CY)); s.append(txt(858, 145, "ON-DEVICE", 16, CY, ls=2))
-    msgs = [("a", 380), ("u", 300), ("a", 460), ("u", 240)]
+    msgs = [("a", 430, "Доброе утро! Сводка за ночь готова."),
+            ("u", 330, "Что в приоритете сегодня?"),
+            ("a", 470, "Три задачи с дедлайном и два договора."),
+            ("u", 250, "Покажи договоры.")]
     y = 220
-    for who, w in msgs:
-        h = 86
+    for who, w, t in msgs:
+        h = 76
         if who == "u":
             x = 1490 - w
             s.append(rrect(x, y, w, h, 18, "url(#grad)"))
-            s.append(bar(x+24, y+30, w-70, 11, "rgba(255,255,255,0.85)", r=5))
-            s.append(bar(x+24, y+52, w-120, 10, "rgba(255,255,255,0.55)", r=5))
+            s.append(txt(x+24, y+46, t, 17, "#ffffff", mono=False))
         else:
             x = 840
             s.append(rrect(x, y, w, h, 18, "rgba(255,255,255,0.05)", LINE2))
-            s.append(bar(x+24, y+30, w-70, 11, INK, op=.8, r=5))
-            s.append(bar(x+24, y+52, w-130, 10, SUB, op=.6, r=5))
-        y += h + 34
+            s.append(txt(x+24, y+46, t, 17, "#dbe2f2", mono=False))
+        y += h + 30
     s.append(rrect(840, y+6, 650, 64, 18, "rgba(255,255,255,0.04)", LINE2))
     s.append(txt(870, y+44, "Спросить по внутренним данным…", 17, MUT))
     return frame("\n".join(s))
@@ -219,16 +238,16 @@ def scene_web():
     s.append(txt(800, 130, "chaosvision.ai", 17, SUB, anchor="middle"))
     # вьюпорт
     vx, vy = 110, 190
-    s.append(dot(vx+22, vy+22, 14, "url(#grad)"))
-    s.append(bar(vx+48, vy+15, 120, 14, INK, op=.85))
-    for i in range(4):
-        s.append(bar(vx+760 + i*110, vy+17, 70, 10, SUB, op=.6))
-    s.append(rrect(vx+1180, vy+2, 150, 40, 20, "url(#grad)"))
+    s.append(dot(vx+18, vy+20, 13, "url(#grad)"))
+    s.append(txt(vx+44, vy+27, "Chaos Vision", 21, INK, mono=False, weight=600))
+    for lbl, dx in [("Услуги", 0), ("Кейсы", 120), ("О студии", 230), ("Контакты", 380)]:
+        s.append(txt(vx+760 + dx, vy+27, lbl, 16, SUB))
+    s.append(rrect(vx+1180, vy+2, 150, 40, 20, "url(#grad)")); s.append(txt(vx+1255, vy+28, "Telegram", 15, "#04060d", anchor="middle", weight=600))
     # герой
-    s.append(bar(vx, vy+130, 620, 34, INK, op=.92, r=10))
-    s.append(bar(vx, vy+180, 500, 34, INK, op=.92, r=10))
-    s.append(bar(vx, vy+250, 460, 14, SUB, op=.6))
-    s.append(bar(vx, vy+278, 380, 14, SUB, op=.6))
+    s.append(txt(vx, vy+158, "Внедряем ИИ,", 46, INK, mono=False, weight=600))
+    s.append(txt(vx, vy+210, "который окупается", 46, INK, mono=False, weight=600))
+    s.append(txt(vx, vy+262, "Студия полного цикла: считаем экономику", 18, SUB, mono=False))
+    s.append(txt(vx, vy+290, "и собираем решения, что работают в проде.", 18, SUB, mono=False))
     s.append(rrect(vx, vy+330, 210, 58, 14, "url(#grad)")); s.append(txt(vx+105, vy+368, "ОБСУДИТЬ", 17, "#04060d", anchor="middle", weight=600))
     s.append(rrect(vx+230, vy+330, 190, 58, 14, "none", LINE))
     # герой-графика
@@ -237,12 +256,13 @@ def scene_web():
     s.append(dot(vx+1040, vy+265, 70, "none"))
     # фичи
     fy = vy+470
+    feats = ["Быстро", "Под контролем", "Приватно"]
     for i in range(3):
         fx = vx + i*460
         s.append(rrect(fx, fy, 420, 150, 16, "rgba(255,255,255,0.03)", LINE2))
         s.append(rrect(fx+28, fy+30, 40, 40, 10, "none", CY, 1.8))
-        s.append(bar(fx+28, fy+92, 250, 13, INK, op=.8))
-        s.append(bar(fx+28, fy+116, 180, 10, SUB, op=.55))
+        s.append(txt(fx+28, fy+100, feats[i], 21, INK, mono=False, weight=600))
+        s.append(bar(fx+28, fy+120, 180, 10, SUB, op=.5))
     return frame("\n".join(s))
 
 def scene_agents():
