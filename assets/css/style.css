@@ -156,6 +156,20 @@ img{max-width:100%;display:block}
 .section__head h2{font-size:clamp(30px,4.4vw,48px);margin-top:16px}
 .section__head p{margin-top:16px;font-size:18px;color:var(--muted)}
 
+/* services — product-mockup hero per service (same language as the cases) */
+.svc-hero{display:grid;grid-template-columns:1.02fr 1fr;gap:60px;align-items:center;margin-bottom:50px}
+.svc-hero .section__head{max-width:none;margin-bottom:0}
+.svc-hero__media{position:relative;aspect-ratio:16/10;border-radius:16px;overflow:hidden;border:1px solid var(--line);background:#04060d}
+.dark .svc-hero__media{border-color:var(--d-line)}
+.svc-hero__media img{width:100%;height:100%;object-fit:cover;transition:transform .7s var(--ease)}
+.svc-hero:hover .svc-hero__media img{transform:scale(1.03)}
+.svc-hero__media::after{content:"";position:absolute;inset:0;pointer-events:none;border-radius:16px;box-shadow:inset 0 0 80px rgba(2,3,9,.45)}
+.svc-hero--rev .section__head{order:2}
+@media (max-width:860px){
+  .svc-hero{grid-template-columns:1fr;gap:24px;margin-bottom:34px}
+  .svc-hero--rev .section__head{order:0}
+}
+
 /* ---------- services ---------- */
 /* services — borderless, text-led; thin hairline rule per column, no boxes */
 .svc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0}
