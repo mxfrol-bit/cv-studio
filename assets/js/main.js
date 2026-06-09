@@ -419,6 +419,124 @@
     update();
   }
 
+  /* ---------- WOW batch ---------- */
+  var REDUCED = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var FINE = !window.matchMedia || window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+
+  /* thin gradient scroll-progress bar */
+  function initScrollProgress() {
+    var bar = document.createElement('div');
+    bar.className = 'scroll-progress';
+    document.body.appendChild(bar);
+    var ticking = false;
+    function upd() {
+      var h = document.documentElement;
+      var max = h.scrollHeight - h.clientHeight;
+      bar.style.transform = 'scaleX(' + (max > 0 ? (h.scrollTop / max) : 0) + ')';
+      ticking = false;
+    }
+    window.addEventListener('scroll', function () {
+      if (!ticking) { requestAnimationFrame(upd); ticking = true; }
+    }, { passive: true });
+    upd();
+  }
+
+  /* 3D tilt + glare on the product mockups */
+  function initTilt() {
+    if (REDUCED || !FINE) return;
+    var els = document.querySelectorAll('.case__media, .svc-hero__media');
+    for (var i = 0; i < els.length; i++) (function (el) {
+      var glare = document.createElement('span');
+      glare.className = 'tilt-glare';
+      el.appendChild(glare);
+      el.addEventListener('pointerenter', function () { el.style.transition = 'transform .08s linear'; });
+      el.addEventListener('pointermove', function (e) {
+        var r = el.getBoundingClientRect();
+        var px = (e.clientX - r.left) / r.width, py = (e.clientY - r.top) / r.height;
+        var rx = (0.5 - py) * 6.5, ry = (px - 0.5) * 8.5;
+        el.style.transform = 'perspective(1100px) rotateX(' + rx + 'deg) rotateY(' + ry + 'deg) scale(1.014)';
+        glare.style.opacity = '1';
+        glare.style.background = 'radial-gradient(440px circle at ' + (px * 100) + '% ' + (py * 100) + '%, rgba(180,222,255,.20), transparent 58%)';
+      }, { passive: true });
+      el.addEventListener('pointerleave', function () {
+        el.style.transition = 'transform .6s var(--ease, ease)';
+        el.style.transform = '';
+        glare.style.opacity = '0';
+      });
+    })(els[i]);
+  }
+
+  /* magnetic CTA buttons with a cursor-following sheen */
+  function initMagnetic() {
+    if (REDUCED || !FINE) return;
+    var btns = document.querySelectorAll('.btn--primary');
+    for (var i = 0; i < btns.length; i++) (function (b) {
+      b.addEventListener('pointermove', function (e) {
+        var r = b.getBoundingClientRect();
+        var mx = e.clientX - r.left - r.width / 2, my = e.clientY - r.top - r.height / 2;
+        b.style.transform = 'translate(' + (mx * 0.16) + 'px,' + (my * 0.28) + 'px)';
+        b.style.setProperty('--bx', (e.clientX - r.left) + 'px');
+        b.style.setProperty('--by', (e.clientY - r.top) + 'px');
+      }, { passive: true });
+      b.addEventListener('pointerleave', function () { b.style.transform = ''; });
+    })(btns[i]);
+  }
+
+  /* soft cursor spotlight over dark hero sections */
+  function initSpotlight() {
+    if (REDUCED || !FINE) return;
+    var heroes = document.querySelectorAll('.hero, .page-hero');
+    for (var i = 0; i < heroes.length; i++) (function (h) {
+      var s = document.createElement('span');
+      s.className = 'hero-spot';
+      h.insertBefore(s, h.firstChild);
+      h.addEventListener('pointermove', function (e) {
+        var r = h.getBoundingClientRect();
+        s.style.transform = 'translate(' + (e.clientX - r.left) + 'px,' + (e.clientY - r.top) + 'px)';
+        s.style.opacity = '1';
+      }, { passive: true });
+      h.addEventListener('pointerleave', function () { s.style.opacity = '0'; });
+    })(heroes[i]);
+  }
+
+  /* self-typing terminal — agent comes alive */
+  function initTerminal() {
+    var box = document.querySelector('[data-terminal] .terminal__body');
+    if (!box) return;
+    var lines = [
+      { t: '$ chaos deploy --agent sales', c: 'cmd' },
+      { t: '✓ голосовой агент поднят · Retell + Claude', c: 'ok' },
+      { t: '✓ интеграция с amoCRM … подключено', c: 'ok' },
+      { t: '→ агент на связи 24/7, лиды квалифицируются', c: 'mut' }
+    ];
+    if (REDUCED) {
+      box.innerHTML = lines.map(function (l) { return '<span class="tl tl--' + l.c + '">' + l.t + '</span>'; }).join('\n');
+      return;
+    }
+    var li = 0;
+    function typeLine() {
+      if (li >= lines.length) {
+        setTimeout(function () { box.innerHTML = ''; li = 0; typeLine(); }, 4200);
+        return;
+      }
+      var l = lines[li], span = document.createElement('span');
+      span.className = 'tl tl--' + l.c;
+      box.appendChild(span);
+      if (li > 0) box.insertBefore(document.createTextNode('\n'), span);
+      var ci = 0;
+      (function typeChar() {
+        span.textContent = l.t.slice(0, ci);
+        ci++;
+        if (ci <= l.t.length) { setTimeout(typeChar, l.c === 'cmd' ? 38 : 14); }
+        else { li++; setTimeout(typeLine, 360); }
+      })();
+    }
+    var io = new IntersectionObserver(function (es) {
+      if (es[0].isIntersecting) { io.disconnect(); typeLine(); }
+    }, { threshold: .3 });
+    io.observe(box.closest('[data-terminal]'));
+  }
+
   document.addEventListener('DOMContentLoaded', function () {
     initNav();
     initReveal();
@@ -426,5 +544,10 @@
     initForm();
     initNeural();
     initScrollFX();
+    initScrollProgress();
+    initTilt();
+    initMagnetic();
+    initSpotlight();
+    initTerminal();
   });
 })();
