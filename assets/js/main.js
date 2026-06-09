@@ -181,7 +181,18 @@
           + 0.22 * Math.sin(x * 3.1 + 1.7) * Math.cos(y * 2.7)
           + 0.15 * Math.sin(z * 3.9 + 0.4)
           + 0.10 * Math.cos((x + y) * 4.3);
-        verts.push({ x: x * n, y: y * n * 1.18, z: z * n, ph: Math.random() * 6.28 });
+        // dispersed ("scattered shard") position — random direction on a larger shell
+        var dth = Math.random() * 6.2832, dph = Math.acos(2 * Math.random() - 1);
+        var sr = 2.1 + Math.random() * 1.6;
+        verts.push({
+          x: x * n, y: y * n * 1.18, z: z * n,
+          sx: Math.sin(dph) * Math.cos(dth) * sr,
+          sy: Math.cos(dph) * sr * 1.15,
+          sz: Math.sin(dph) * Math.sin(dth) * sr,
+          o: Math.random() * 0.4,            // per-particle assembly delay (stagger)
+          wob: 0.05 + Math.random() * 0.09,  // drift amplitude while scattered
+          ph: Math.random() * 6.28
+        });
       }
       faces = ico.F;
       // floating shards orbiting the crystal (the debris field from the reference)
@@ -228,6 +239,18 @@
 
     var CAM = 2.85; // camera distance for perspective
 
+    function smooth(x) { x = x < 0 ? 0 : x > 1 ? 1 : x; return x * x * (3 - 2 * x); }
+    // looping morph: 0 = scattered particle cloud, 1 = assembled crystal
+    var ASM = 2700, HOLD1 = 2600, DIS = 2700, HOLD0 = 1700; // ms per phase
+    var PERIOD = ASM + HOLD1 + DIS + HOLD0;
+    function morphAt(t) {
+      var p = t % PERIOD;
+      if (p < ASM) return smooth(p / ASM);                 // assemble
+      p -= ASM; if (p < HOLD1) return 1;                   // hold figure
+      p -= HOLD1; if (p < DIS) return 1 - smooth(p / DIS); // disperse
+      return 0;                                            // hold cloud
+    }
+
     function draw(t) {
       ctx.clearRect(0, 0, w, h);
       if (!built) return;
@@ -251,64 +274,81 @@
 
       var i, p, r;
 
-      // glowing core behind the crystal — light leaking through the cracks
+      // morph phase: 0 = scattered particle cloud, 1 = assembled crystal
+      var morphP = reduce ? 1 : morphAt(t);
+      var asm = smooth(morphP);
+
+      // glowing core — strongest when the figure is assembled, fades with the cloud
       var coreR = R * 1.35;
-      var pulse = reduce ? 0.5 : (0.46 + 0.07 * Math.sin(t * 0.0009));
+      var pulse = (reduce ? 0.5 : (0.46 + 0.07 * Math.sin(t * 0.0009))) * (0.28 + 0.72 * asm);
       var g = ctx.createRadialGradient(cx, cy, 0, cx, cy, coreR);
       g.addColorStop(0, 'rgba(198,233,255,' + pulse.toFixed(3) + ')');
-      g.addColorStop(0.3, 'rgba(110,170,242,0.2)');
+      g.addColorStop(0.3, 'rgba(110,170,242,' + (0.2 * (0.3 + 0.7 * asm)).toFixed(3) + ')');
       g.addColorStop(1, 'rgba(20,40,90,0)');
       ctx.fillStyle = g;
       ctx.beginPath(); ctx.arc(cx, cy, coreR, 0, 6.2832); ctx.fill();
 
-      // project crystal vertices (keep rotated 3D coords for face normals)
+      // project particles — each morphs between its scattered point and its figure vertex
       for (i = 0; i < verts.length; i++) {
         var b = verts[i];
-        r = rot(b.x, b.y, b.z);
+        // staggered per-particle progress so shards fly in / out at different times
+        var vp = smooth(morphP * 1.4 - b.o);
+        var scat = 1 - vp;
+        var wob = scat * b.wob;
+        var px = b.sx + (b.x - b.sx) * vp + Math.sin(t * 0.0006 + b.ph) * wob;
+        var py = b.sy + (b.y - b.sy) * vp + Math.cos(t * 0.0007 + b.ph) * wob;
+        var pz = b.sz + (b.z - b.sz) * vp + Math.sin(t * 0.0005 + b.ph * 1.3) * wob;
+        r = rot(px, py, pz);
         var persp = CAM / (CAM - r[2]);
-        proj[i] = { rx: r[0], ry: r[1], rz: r[2], sx: cx + r[0] * R * persp, sy: cy + r[1] * R * persp, dep: (r[2] + 1) / 2, ph: b.ph };
+        proj[i] = { rx: r[0], ry: r[1], rz: r[2], sx: cx + r[0] * R * persp, sy: cy + r[1] * R * persp, dep: (r[2] + 1) / 2, ph: b.ph, vp: vp, sc: scat };
       }
 
-      var Lx = 0.36, Ly = -0.5, Lz = 0.78; // light direction (view space)
-
-      // assemble faces with depth + lighting, paint back-to-front for translucent glass
-      var flist = [];
-      for (i = 0; i < faces.length; i++) {
-        var f = faces[i], A = proj[f[0]], B = proj[f[1]], C = proj[f[2]];
-        var ux = B.rx - A.rx, uy = B.ry - A.ry, uz = B.rz - A.rz;
-        var vx = C.rx - A.rx, vy = C.ry - A.ry, vz = C.rz - A.rz;
-        var nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx;
-        var nl = Math.sqrt(nx * nx + ny * ny + nz * nz) || 1;
-        nx /= nl; ny /= nl; nz /= nl;
-        flist.push({ A: A, B: B, C: C, facing: nx * Lx + ny * Ly + nz * Lz, front: nz, z: (A.rz + B.rz + C.rz) / 3 });
+      // faces only materialise as the figure assembles
+      var faceA = smooth((morphP - 0.55) / 0.4);
+      if (faceA > 0.02) {
+        var Lx = 0.36, Ly = -0.5, Lz = 0.78; // light direction (view space)
+        var flist = [];
+        for (i = 0; i < faces.length; i++) {
+          var f = faces[i], A = proj[f[0]], B = proj[f[1]], C = proj[f[2]];
+          var ux = B.rx - A.rx, uy = B.ry - A.ry, uz = B.rz - A.rz;
+          var vx = C.rx - A.rx, vy = C.ry - A.ry, vz = C.rz - A.rz;
+          var nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx;
+          var nl = Math.sqrt(nx * nx + ny * ny + nz * nz) || 1;
+          nx /= nl; ny /= nl; nz /= nl;
+          flist.push({ A: A, B: B, C: C, facing: nx * Lx + ny * Ly + nz * Lz, front: nz, z: (A.rz + B.rz + C.rz) / 3 });
+        }
+        flist.sort(function (p, q) { return p.z - q.z; });
+        for (i = 0; i < flist.length; i++) {
+          var fc = flist[i], dep = (fc.z + 1) / 2, lit = fc.facing > 0 ? fc.facing : 0, front = fc.front > 0 ? fc.front : 0;
+          ctx.beginPath();
+          ctx.moveTo(fc.A.sx, fc.A.sy); ctx.lineTo(fc.B.sx, fc.B.sy); ctx.lineTo(fc.C.sx, fc.C.sy); ctx.closePath();
+          ctx.fillStyle = 'rgba(' + Math.round(40 + lit * 160 + dep * 35) + ',' + Math.round(85 + lit * 155 + dep * 50) + ',' + Math.round(155 + lit * 90 + dep * 60) + ',' + ((0.05 + dep * 0.07 + lit * 0.16) * faceA).toFixed(3) + ')';
+          ctx.fill();
+          var fl = reduce ? 1 : (0.82 + 0.18 * Math.sin(t * 0.0018 + i));
+          ctx.strokeStyle = 'rgba(' + Math.round(175 + lit * 80) + ',' + Math.round(218 + lit * 37) + ',255,' + ((0.07 + front * 0.66 * (0.5 + lit)) * fl * faceA).toFixed(3) + ')';
+          ctx.lineWidth = 0.6 + front * 1.2;
+          ctx.stroke();
+        }
       }
-      flist.sort(function (p, q) { return p.z - q.z; });
 
-      for (i = 0; i < flist.length; i++) {
-        var fc = flist[i], dep = (fc.z + 1) / 2, lit = fc.facing > 0 ? fc.facing : 0, front = fc.front > 0 ? fc.front : 0;
-        // translucent facet — brighter where it faces the light
-        ctx.beginPath();
-        ctx.moveTo(fc.A.sx, fc.A.sy); ctx.lineTo(fc.B.sx, fc.B.sy); ctx.lineTo(fc.C.sx, fc.C.sy); ctx.closePath();
-        ctx.fillStyle = 'rgba(' + Math.round(40 + lit * 160 + dep * 35) + ',' + Math.round(85 + lit * 155 + dep * 50) + ',' + Math.round(155 + lit * 90 + dep * 60) + ',' + (0.05 + dep * 0.07 + lit * 0.16).toFixed(3) + ')';
-        ctx.fill();
-        // glowing veins along the cracks — strongest on lit, front-facing edges
-        var fl = reduce ? 1 : (0.82 + 0.18 * Math.sin(t * 0.0018 + i));
-        ctx.strokeStyle = 'rgba(' + Math.round(175 + lit * 80) + ',' + Math.round(218 + lit * 37) + ',255,' + ((0.07 + front * 0.66 * (0.5 + lit)) * fl).toFixed(3) + ')';
-        ctx.lineWidth = 0.6 + front * 1.2;
-        ctx.stroke();
-      }
-
-      // bright sparkle on the near-front vertices
+      // glowing particle cloud — additive so overlaps bloom; brighter while scattered
+      ctx.globalCompositeOperation = 'lighter';
       for (i = 0; i < proj.length; i++) {
         p = proj[i];
-        if (p.rz < 0.25) continue;
-        var tw = reduce ? 1 : (0.6 + 0.4 * Math.sin(t * 0.0014 + p.ph));
-        var na = (p.dep - 0.62) * 1.7 * tw;
-        if (na <= 0) continue;
+        if (p.rz >= CAM - 0.2) continue;          // particle past the camera plane — skip
+        var twk = reduce ? 1 : (0.7 + 0.3 * Math.sin(t * 0.0016 + p.ph));
+        var dep = p.dep < 0 ? 0 : p.dep;          // guard against negative radius / alpha
+        var a = (0.16 + dep * 0.34 + p.sc * 0.26) * twk;
+        var rad = 0.7 + dep * 1.6 + p.sc * 0.9;
+        if (a <= 0) continue;
+        // cyan when flying free → white-blue when locked into the figure
+        var cr = Math.round(150 + (1 - p.sc) * 80);
+        var cg = Math.round(210 + (1 - p.sc) * 30);
         ctx.beginPath();
-        ctx.fillStyle = 'rgba(222,240,255,' + Math.min(0.7, na).toFixed(3) + ')';
-        ctx.arc(p.sx, p.sy, 0.6 + p.dep * 1.7, 0, 6.2832); ctx.fill();
+        ctx.fillStyle = 'rgba(' + cr + ',' + cg + ',255,' + a.toFixed(3) + ')';
+        ctx.arc(p.sx, p.sy, rad, 0, 6.2832); ctx.fill();
       }
+      ctx.globalCompositeOperation = 'source-over';
 
       // floating debris shards
       for (i = 0; i < shards.length; i++) {
