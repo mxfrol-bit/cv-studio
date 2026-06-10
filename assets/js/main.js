@@ -169,23 +169,35 @@
       return { V: V, F: F };
     }
 
+    // each page gets its own distinct figure (different silhouette + facet rhythm)
+    function pickShape() {
+      var p = (location.pathname || '').toLowerCase();
+      if (p.indexOf('uslugi') >= 0)   return { ex: 1.30, ey: 0.96, ez: 0.84, a: [0.30, 0.20, 0.15], f: [2.4, 4.7, 5.3], ph: 0.9 }; // wide angular shard
+      if (p.indexOf('keysy') >= 0)    return { ex: 1.02, ey: 0.74, ez: 1.26, a: [0.18, 0.27, 0.11], f: [3.7, 2.9, 4.1], ph: 2.1 }; // deep flat prism
+      if (p.indexOf('o-studii') >= 0) return { ex: 1.08, ey: 1.08, ez: 1.08, a: [0.09, 0.08, 0.06], f: [2.0, 3.1, 2.6], ph: 0.3 }; // smooth orb
+      if (p.indexOf('kontakty') >= 0) return { ex: 0.90, ey: 1.34, ez: 0.90, a: [0.24, 0.17, 0.21], f: [4.3, 3.3, 5.7], ph: 1.5 }; // tall twisted spire
+      return { ex: 1.0, ey: 1.18, ez: 1.0, a: [0.22, 0.15, 0.10], f: [3.1, 3.9, 4.3], ph: 1.7 };                                   // index crystal
+    }
+    var shape = pickShape();
+
     function buildGeometry() {
       var sub = w < 860 ? 1 : 2;            // 80 vs 320 facets
       var ico = makeIcosphere(sub);
       var V = ico.V;
+      var sh = shape;
       // displace each vertex irregularly so the body reads as a rough, faceted crystal
       verts = [];
       for (var i = 0; i < V.length; i++) {
         var x = V[i][0], y = V[i][1], z = V[i][2];
         var n = 1
-          + 0.22 * Math.sin(x * 3.1 + 1.7) * Math.cos(y * 2.7)
-          + 0.15 * Math.sin(z * 3.9 + 0.4)
-          + 0.10 * Math.cos((x + y) * 4.3);
+          + sh.a[0] * Math.sin(x * sh.f[0] + sh.ph) * Math.cos(y * 2.7)
+          + sh.a[1] * Math.sin(z * sh.f[1] + 0.4)
+          + sh.a[2] * Math.cos((x + y) * sh.f[2]);
         // dispersed ("scattered shard") position — random direction on a larger shell
         var dth = Math.random() * 6.2832, dph = Math.acos(2 * Math.random() - 1);
         var sr = 2.1 + Math.random() * 1.6;
         verts.push({
-          x: x * n, y: y * n * 1.18, z: z * n,
+          x: x * n * sh.ex, y: y * n * sh.ey, z: z * n * sh.ez,
           sx: Math.sin(dph) * Math.cos(dth) * sr,
           sy: Math.cos(dph) * sr * 1.15,
           sz: Math.sin(dph) * Math.sin(dth) * sr,
@@ -240,16 +252,9 @@
     var CAM = 2.85; // camera distance for perspective
 
     function smooth(x) { x = x < 0 ? 0 : x > 1 ? 1 : x; return x * x * (3 - 2 * x); }
-    // looping morph: 0 = scattered particle cloud, 1 = assembled crystal
-    var ASM = 2700, HOLD1 = 2600, DIS = 2700, HOLD0 = 1700; // ms per phase
-    var PERIOD = ASM + HOLD1 + DIS + HOLD0;
-    function morphAt(t) {
-      var p = t % PERIOD;
-      if (p < ASM) return smooth(p / ASM);                 // assemble
-      p -= ASM; if (p < HOLD1) return 1;                   // hold figure
-      p -= HOLD1; if (p < DIS) return 1 - smooth(p / DIS); // disperse
-      return 0;                                            // hold cloud
-    }
+    // scroll-driven morph: idle = assembled figure; scrolling injects energy that
+    // disperses the body into particles, then it eases back together when you stop.
+    var disp = 0; // 0 = assembled, 1 = fully scattered
 
     function draw(t) {
       ctx.clearRect(0, 0, w, h);
@@ -257,6 +262,7 @@
       if (!reduce) {
         spinVel *= 0.94;
         angleY += 0.0026 + spinVel;           // ambient spin + scroll velocity
+        disp *= 0.92;                          // ease back toward the assembled figure
         tiltX += (tiltTX - tiltX) * 0.05;
         tiltY += (tiltTY - tiltY) * 0.05;
       }
@@ -275,7 +281,7 @@
       var i, p, r;
 
       // morph phase: 0 = scattered particle cloud, 1 = assembled crystal
-      var morphP = reduce ? 1 : morphAt(t);
+      var morphP = reduce ? 1 : (1 - smooth(disp));
       var asm = smooth(morphP);
 
       // glowing core — strongest when the figure is assembled, fades with the cloud
@@ -398,7 +404,10 @@
     if (!reduce) {
       window.addEventListener('scroll', function () {
         var y = window.pageYOffset || 0;
-        spinVel += (y - lastScrollY) * 0.00002;
+        var dY = y - lastScrollY;
+        spinVel += dY * 0.00002;
+        disp += Math.min(0.55, Math.abs(dY) * 0.011);   // scrolling breaks the figure apart
+        if (disp > 1) disp = 1;
         lastScrollY = y;
         if (spinVel > 0.05) spinVel = 0.05; else if (spinVel < -0.05) spinVel = -0.05;
         if (!raf && visible) start();
