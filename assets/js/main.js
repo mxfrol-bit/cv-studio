@@ -125,13 +125,12 @@
   }
 
   /* ===========================================================
-     LIVING GEOMETRY v2 — one body of particles that:
-     · morphs into a different figure for each section (crystal →
-       torus knot → neural sphere → orbit rings → DNA helix)
-     · scatters on scroll and reassembles when you stop (kept)
-     · particles flee the cursor like a school of fish
-     · click sends a shockwave ripple through the body
-     · in flight, neighbours link with neural lines + leave trails
+     LIVING GEOMETRY v3 — calm and fluid.
+     One monochrome body of particles. Scroll position directly
+     drives a continuous morph: crystal → torus knot → neural
+     sphere → orbit rings → DNA helix, flowing smoothly between
+     neighbours as you scroll. Light scatter on fast scroll and
+     gentle cursor tilt are kept from the original. Nothing else.
      =========================================================== */
   function setupNeural(canvas, reduce) {
     var ctx = canvas.getContext('2d');
@@ -139,21 +138,17 @@
     var w = 0, h = 0, cx = 0, cy = 0, R = 0, raf = null, visible = true, last = 0;
 
     var N = 0, parts = [], faces = [], proj = [], built = false, lastNarrow = null;
-    var shapes = [];            // [{pos:[N*3], links:[[a,b]], faces:bool, col:[r,g,b]}]
-    var shapeIdx = 0, morph = 1;        // morph: 0 → flying to new shape, 1 → arrived
-    var fromPos = null;                  // captured positions at the moment of switch
-    var colNow = [150, 210, 255], colFrom = [150, 210, 255];
+    var shapes = [];                       // [{pos, links, faces:bool}]
+    var isIndex = !/uslugi|keysy|o-studii|kontakty/.test((location.pathname || '').toLowerCase());
+    var progT = 0, prog = 0;               // scroll-driven morph position (smoothed)
 
     var angleY = 0, spinVel = 0, lastScrollY = window.pageYOffset || 0;
     var tiltX = 0, tiltY = 0, tiltTX = 0, tiltTY = 0;
-    var disp = 0;                        // scroll scatter 0..1 (kept from v1)
-    var mx = -9999, my = -9999;          // cursor in canvas space
-    var waves = [];                      // click shockwaves [{r,a}]
+    var disp = 0;
     var CAM = 2.85;
 
     function smooth(x) { x = x < 0 ? 0 : x > 1 ? 1 : x; return x * x * (3 - 2 * x); }
 
-    /* ---------- geometry builders ---------- */
     function makeIcosphere(sub) {
       var t = (1 + Math.sqrt(5)) / 2;
       var V = [[-1, t, 0], [1, t, 0], [-1, -t, 0], [1, -t, 0], [0, -1, t], [0, 1, t],
@@ -200,9 +195,9 @@
       var V = ico.V; N = V.length;
       shapes = [];
 
-      // 0 · faceted crystal (the original body) — indigo-white
-      var pos0 = new Array(N * 3), sh = crystalCfg;
-      for (var i = 0; i < N; i++) {
+      // 0 · faceted crystal (the original)
+      var pos0 = new Array(N * 3), sh = crystalCfg, i;
+      for (i = 0; i < N; i++) {
         var x = V[i][0], y = V[i][1], z = V[i][2];
         var n = 1
           + sh.a[0] * Math.sin(x * sh.f[0] + sh.ph) * Math.cos(y * 2.7)
@@ -210,25 +205,23 @@
           + sh.a[2] * Math.cos((x + y) * sh.f[2]);
         pos0[i * 3] = x * n * sh.ex; pos0[i * 3 + 1] = y * n * sh.ey; pos0[i * 3 + 2] = z * n * sh.ez;
       }
-      shapes.push({ pos: pos0, links: null, faces: true, col: [150, 210, 255] });
+      shapes.push({ pos: pos0, links: null, faces: true });
+      if (!isIndex) { return; }            // subpages keep their single crystal
 
-      // 1 · torus knot (p=2, q=3) — violet
+      // 1 · torus knot
       var pos1 = new Array(N * 3), links1 = [];
       for (i = 0; i < N; i++) {
-        var t = i / N * Math.PI * 2, p = 2, q = 3;
-        var r2 = Math.cos(q * t) + 2;
-        var bx = r2 * Math.cos(p * t) * 0.42;
-        var by = -Math.sin(q * t) * 0.55;
-        var bz = r2 * Math.sin(p * t) * 0.42;
-        var j = (i * 2.39996);                       // golden-angle tube offset
-        pos1[i * 3] = bx + Math.cos(j) * 0.09;
-        pos1[i * 3 + 1] = by + Math.sin(j) * 0.09;
-        pos1[i * 3 + 2] = bz + Math.cos(j * 1.7) * 0.09;
+        var t = i / N * Math.PI * 2;
+        var r2 = Math.cos(3 * t) + 2;
+        var j = i * 2.39996;
+        pos1[i * 3]     = r2 * Math.cos(2 * t) * 0.42 + Math.cos(j) * 0.07;
+        pos1[i * 3 + 1] = -Math.sin(3 * t) * 0.55 + Math.sin(j) * 0.07;
+        pos1[i * 3 + 2] = r2 * Math.sin(2 * t) * 0.42 + Math.cos(j * 1.7) * 0.07;
         links1.push([i, (i + 1) % N]);
       }
-      shapes.push({ pos: pos1, links: links1, faces: false, col: [192, 150, 255] });
+      shapes.push({ pos: pos1, links: links1, faces: false });
 
-      // 2 · neural sphere (fibonacci shell) — cyan, lines are dynamic-proximity
+      // 2 · neural sphere (fibonacci shell) with static near-neighbour web
       var pos2 = new Array(N * 3), GA = Math.PI * (3 - Math.sqrt(5));
       for (i = 0; i < N; i++) {
         var yy = 1 - (i / (N - 1)) * 2;
@@ -237,17 +230,29 @@
         pos2[i * 3 + 1] = yy * 1.18;
         pos2[i * 3 + 2] = Math.sin(th) * rr * 1.18;
       }
-      shapes.push({ pos: pos2, links: 'proximity', faces: false, col: [60, 226, 255] });
+      var links2 = [];
+      for (i = 0; i < N; i++) {            // each node links to 2 nearest forward neighbours
+        var best = [-1, -1], bd = [9, 9];
+        for (var k = i + 1; k < Math.min(N, i + 24); k++) {
+          var dx = pos2[i*3]-pos2[k*3], dy = pos2[i*3+1]-pos2[k*3+1], dz = pos2[i*3+2]-pos2[k*3+2];
+          var d = dx*dx+dy*dy+dz*dz;
+          if (d < bd[0]) { bd[1]=bd[0]; best[1]=best[0]; bd[0]=d; best[0]=k; }
+          else if (d < bd[1]) { bd[1]=d; best[1]=k; }
+        }
+        if (best[0] > 0) links2.push([i, best[0]]);
+        if (best[1] > 0) links2.push([i, best[1]]);
+      }
+      shapes.push({ pos: pos2, links: links2, faces: false });
 
-      // 3 · three tilted orbit rings — ice blue
+      // 3 · three tilted orbit rings
       var pos3 = new Array(N * 3), links3 = [];
       var ringSize = Math.floor(N / 3);
       for (i = 0; i < N; i++) {
         var ring = Math.min(2, Math.floor(i / ringSize));
-        var k = (i - ring * ringSize) / ringSize * Math.PI * 2;
+        var kk = (i - ring * ringSize) / ringSize * Math.PI * 2;
         var rad = 1.25 - ring * 0.12;
-        var ox = Math.cos(k) * rad, oy = Math.sin(k) * rad, oz = 0;
-        var ang = ring * 1.05 + 0.5;                 // each ring tilted differently
+        var ox = Math.cos(kk) * rad, oy = Math.sin(kk) * rad, oz = 0;
+        var ang = ring * 1.05 + 0.5;
         var oy2 = oy * Math.cos(ang) - oz * Math.sin(ang);
         var oz2 = oy * Math.sin(ang) + oz * Math.cos(ang);
         var ax = ring * 0.9;
@@ -258,9 +263,9 @@
         if (Math.floor(nb / ringSize) === ring && nb < N) links3.push([i, nb]);
         else links3.push([i, ring * ringSize]);
       }
-      shapes.push({ pos: pos3, links: links3, faces: false, col: [165, 220, 255] });
+      shapes.push({ pos: pos3, links: links3, faces: false });
 
-      // 4 · DNA double helix — violet-pink
+      // 4 · DNA double helix
       var pos4 = new Array(N * 3), links4 = [];
       var half = Math.floor(N / 2);
       for (i = 0; i < N; i++) {
@@ -272,9 +277,9 @@
         pos4[i * 3 + 2] = Math.sin(a2) * 0.52;
         var nx2 = i + 1;
         if ((strand === 0 && nx2 < half) || (strand === 1 && nx2 < N)) links4.push([i, nx2]);
-        if (strand === 0 && i % 6 === 0 && i + half < N) links4.push([i, i + half]); // rungs
+        if (strand === 0 && i % 6 === 0 && i + half < N) links4.push([i, i + half]);
       }
-      shapes.push({ pos: pos4, links: links4, faces: false, col: [225, 150, 255] });
+      shapes.push({ pos: pos4, links: links4, faces: false });
     }
 
     function buildGeometry() {
@@ -283,53 +288,21 @@
       buildShapes(ico);
       faces = ico.F;
       parts = [];
-      var P0 = shapes[0].pos;
       for (var i = 0; i < N; i++) {
         var dth = Math.random() * 6.2832, dph = Math.acos(2 * Math.random() - 1);
         var sr = 2.1 + Math.random() * 1.6;
         parts.push({
-          fx: P0[i * 3], fy: P0[i * 3 + 1], fz: P0[i * 3 + 2],   // morph "from"
-          sx: Math.sin(dph) * Math.cos(dth) * sr,                 // scatter shell point
+          sx: Math.sin(dph) * Math.cos(dth) * sr,
           sy: Math.cos(dph) * sr * 1.15,
           sz: Math.sin(dph) * Math.sin(dth) * sr,
-          o: Math.random() * 0.35,
           wob: 0.05 + Math.random() * 0.09,
-          ph: Math.random() * 6.28,
-          ox: 0, oy: 0,                                            // eased screen offset (cursor/wave)
-          px: 0, py: 0, hasP: false                                // prev screen pos for trails
+          ph: Math.random() * 6.28
         });
       }
-      shapeIdx = 0; morph = 1; fromPos = null;
-      colNow = shapes[0].col.slice(); colFrom = colNow.slice();
       proj = new Array(N);
       built = true;
     }
 
-    /* ---------- shape switching ---------- */
-    function setShape(idx) {
-      if (!built || idx === shapeIdx || idx >= shapes.length) return;
-      // capture current targets as the morph origin
-      var src = shapes[shapeIdx].pos, prevMorph = morph;
-      var origin = fromPos && prevMorph < 1 ? null : src;  // mid-flight: blend below
-      fromPos = new Array(N * 3);
-      for (var i = 0; i < N; i++) {
-        if (origin) {
-          fromPos[i * 3] = origin[i * 3]; fromPos[i * 3 + 1] = origin[i * 3 + 1]; fromPos[i * 3 + 2] = origin[i * 3 + 2];
-        } else {
-          // approximate current in-flight position
-          var mp = smooth(prevMorph * 1.45 - parts[i].o);
-          fromPos[i * 3]     = parts[i].fx + (src[i * 3]     - parts[i].fx) * mp;
-          fromPos[i * 3 + 1] = parts[i].fy + (src[i * 3 + 1] - parts[i].fy) * mp;
-          fromPos[i * 3 + 2] = parts[i].fz + (src[i * 3 + 2] - parts[i].fz) * mp;
-        }
-        parts[i].fx = fromPos[i * 3]; parts[i].fy = fromPos[i * 3 + 1]; parts[i].fz = fromPos[i * 3 + 2];
-      }
-      colFrom = colNow.slice();
-      shapeIdx = idx;
-      morph = 0;
-    }
-
-    /* ---------- layout ---------- */
     function build() {
       var rect = canvas.getBoundingClientRect();
       w = rect.width; h = rect.height;
@@ -347,29 +320,28 @@
     function onMove(e) {
       tiltTY = ((e.clientX - cx) / Math.max(cx, 1)) * 0.5;
       tiltTX = ((e.clientY - cy) / Math.max(cy, 1)) * 0.35;
-      mx = e.clientX; my = e.clientY;
     }
-    function offMouse() { tiltTX = 0; tiltTY = 0; mx = -9999; my = -9999; }
+    function offMouse() { tiltTX = 0; tiltTY = 0; }
 
-    /* ---------- render ---------- */
+    function readScroll() {
+      if (!isIndex || shapes.length < 2) { progT = 0; return; }
+      var d = document.documentElement;
+      var max = Math.max(1, d.scrollHeight - d.clientHeight);
+      // reach the final figure at ~92% of the page, hold it after
+      progT = Math.min(1, (d.scrollTop || window.pageYOffset || 0) / (max * 0.92)) * (shapes.length - 1);
+    }
+
     function draw(t) {
       ctx.clearRect(0, 0, w, h);
       if (!built) return;
       if (!reduce) {
         spinVel *= 0.94;
         angleY += 0.0026 + spinVel;
-        disp *= 0.92;
+        disp *= 0.93;
         tiltX += (tiltTX - tiltX) * 0.05;
         tiltY += (tiltTY - tiltY) * 0.05;
-        if (morph < 1) { morph += 0.012; if (morph > 1) morph = 1; }
+        prog += (progT - prog) * 0.045;            // the butter: eased morph position
       }
-      // colour eases between shape palettes
-      var cm = smooth(morph);
-      var shape = shapes[shapeIdx];
-      var CR = colFrom[0] + (shape.col[0] - colFrom[0]) * cm;
-      var CG = colFrom[1] + (shape.col[1] - colFrom[1]) * cm;
-      var CB = colFrom[2] + (shape.col[2] - colFrom[2]) * cm;
-
       var aY = angleY + tiltY;
       var aX = 0.34 + (reduce ? 0 : Math.sin(t * 0.00015) * 0.14) + tiltX;
       var cosY = Math.cos(aY), sinY = Math.sin(aY), cosX = Math.cos(aX), sinX = Math.sin(aX);
@@ -381,93 +353,59 @@
         return [x1, y2, z2];
       }
 
-      var i, p, r;
-      var morphFlight = Math.sin(Math.min(1, Math.max(0, morph)) * Math.PI); // burst mid-morph
-      var asm = smooth(1 - disp) * (1 - 0.85 * morphFlight);                 // overall "assembled-ness"
+      // which two shapes are we between, and how far
+      var ia = Math.floor(prog); if (ia > shapes.length - 1) ia = shapes.length - 1;
+      var ib = Math.min(shapes.length - 1, ia + 1);
+      var lt = smooth(prog - ia);                   // eased local 0..1 between A and B
+      var A = shapes[ia], B = shapes[ib];
+      var mid = Math.sin(lt * Math.PI);             // gentle breathing apart mid-transition
 
-      // breathing core glow, tinted by the current shape
+      var i, p, r;
+      var scat = smooth(disp);
+      var asm = (1 - scat) * (1 - 0.35 * mid);
+
+      // breathing ice-white core
       var coreR = R * 1.35;
       var pulse = (reduce ? 0.5 : (0.46 + 0.07 * Math.sin(t * 0.0009))) * (0.28 + 0.72 * asm);
       var g = ctx.createRadialGradient(cx, cy, 0, cx, cy, coreR);
-      g.addColorStop(0, 'rgba(' + Math.round(CR + 40) + ',' + Math.round(CG + 20) + ',255,' + pulse.toFixed(3) + ')');
-      g.addColorStop(0.3, 'rgba(' + Math.round(CR * 0.6) + ',' + Math.round(CG * 0.75) + ',242,' + (0.2 * (0.3 + 0.7 * asm)).toFixed(3) + ')');
-      g.addColorStop(1, 'rgba(20,40,90,0)');
+      g.addColorStop(0, 'rgba(205,228,255,' + pulse.toFixed(3) + ')');
+      g.addColorStop(0.3, 'rgba(120,160,225,' + (0.18 * (0.3 + 0.7 * asm)).toFixed(3) + ')');
+      g.addColorStop(1, 'rgba(18,30,65,0)');
       ctx.fillStyle = g;
       ctx.beginPath(); ctx.arc(cx, cy, coreR, 0, 6.2832); ctx.fill();
 
-      // shockwaves advance
-      for (i = waves.length - 1; i >= 0; i--) {
-        waves[i].r += 9; waves[i].a *= 0.955;
-        if (waves[i].a < 0.02) waves.splice(i, 1);
-      }
-
-      // project every particle
-      var scatGlobal = smooth(disp);
-      var tgt = shape.pos;
+      // project: blend A→B, soft breath outward mid-morph, scroll scatter on top
       for (i = 0; i < N; i++) {
         var b = parts[i];
-        var mp = smooth(Math.min(1, morph * 1.45) - b.o * (1 - morph)); // staggered arrival
-        if (mp < 0) mp = 0;
-        // morph path with a mid-flight bulge outward through the particle's scatter point
-        var bug = Math.sin(Math.min(1, mp) * Math.PI) * morphFlight * 0.9;
-        var bxp = b.fx + (tgt[i * 3]     - b.fx) * mp;
-        var byp = b.fy + (tgt[i * 3 + 1] - b.fy) * mp;
-        var bzp = b.fz + (tgt[i * 3 + 2] - b.fz) * mp;
-        // scroll scatter pulls toward the shell point (kept behaviour)
-        var sc = scatGlobal;
-        var wob = (sc + bug * 0.5) * b.wob + 0.012;
-        var px3 = bxp + (b.sx - bxp) * sc + (b.sx - bxp) * 0.25 * bug + Math.sin(t * 0.0006 + b.ph) * wob;
-        var py3 = byp + (b.sy - byp) * sc + (b.sy - byp) * 0.25 * bug + Math.cos(t * 0.0007 + b.ph) * wob;
-        var pz3 = bzp + (b.sz - bzp) * sc + (b.sz - bzp) * 0.25 * bug + Math.sin(t * 0.0005 + b.ph * 1.3) * wob;
-        r = rot(px3, py3, pz3);
+        var bx = A.pos[i * 3]     + (B.pos[i * 3]     - A.pos[i * 3])     * lt;
+        var by = A.pos[i * 3 + 1] + (B.pos[i * 3 + 1] - A.pos[i * 3 + 1]) * lt;
+        var bz = A.pos[i * 3 + 2] + (B.pos[i * 3 + 2] - A.pos[i * 3 + 2]) * lt;
+        var breathe = mid * 0.16;                   // subtle, keeps the form readable
+        bx += b.sx * breathe; by += b.sy * breathe; bz += b.sz * breathe;
+        var wob = (0.012 + scat * b.wob + mid * 0.02);
+        var px = bx + (b.sx - bx) * scat + Math.sin(t * 0.0006 + b.ph) * wob;
+        var py = by + (b.sy - by) * scat + Math.cos(t * 0.0007 + b.ph) * wob;
+        var pz = bz + (b.sz - bz) * scat + Math.sin(t * 0.0005 + b.ph * 1.3) * wob;
+        r = rot(px, py, pz);
         var persp = CAM / (CAM - r[2]);
-        var sxp = cx + r[0] * R * persp;
-        var syp = cy + r[1] * R * persp;
-
-        // cursor repulsion (screen space, springy)
-        var txo = 0, tyo = 0;
-        if (mx > -999) {
-          var dxm = sxp - mx, dym = syp - my;
-          var d2 = dxm * dxm + dym * dym, RAD = 150;
-          if (d2 < RAD * RAD && d2 > 0.01) {
-            var d = Math.sqrt(d2), f = (1 - d / RAD); f = f * f * 46;
-            txo = dxm / d * f; tyo = dym / d * f;
-          }
-        }
-        // shockwave ripple
-        for (var wv = 0; wv < waves.length; wv++) {
-          var W = waves[wv];
-          var dxw = sxp - W.x, dyw = syp - W.y;
-          var dw = Math.sqrt(dxw * dxw + dyw * dyw) || 1;
-          var band = dw - W.r;
-          var gpow = Math.exp(-(band * band) / 1800) * W.a * 30;
-          txo += dxw / dw * gpow; tyo += dyw / dw * gpow;
-        }
-        b.ox += (txo - b.ox) * 0.18;
-        b.oy += (tyo - b.oy) * 0.18;
-        sxp += b.ox; syp += b.oy;
-
-        var liveliness = Math.min(1, (Math.abs(b.ox) + Math.abs(b.oy)) / 24);
-        proj[i] = { rx: r[0], ry: r[1], rz: r[2], sx: sxp, sy: syp,
-                    dep: (r[2] + 1) / 2, ph: b.ph,
-                    sc: Math.max(sc, 1 - mp, morphFlight * 0.6, liveliness),
-                    pxp: b.hasP ? b.px : sxp, pyp: b.hasP ? b.py : syp };
-        b.px = sxp; b.py = syp; b.hasP = true;
+        proj[i] = { rx: r[0], ry: r[1], rz: r[2],
+                    sx: cx + r[0] * R * persp, sy: cy + r[1] * R * persp,
+                    dep: (r[2] + 1) / 2, ph: b.ph, sc: Math.max(scat, mid * 0.5) };
       }
 
-      // crystal faces (shape 0 only, when assembled)
-      var faceA = shape.faces ? smooth(((1 - scatGlobal) - 0.55) / 0.4) * smooth((morph - 0.6) / 0.4) : 0;
+      // crystal faces fade out/in as the crystal enters or leaves the blend
+      var crysW = (ia === 0 ? 1 - lt : 0) + (ib === 0 ? lt : 0);
+      var faceA = smooth((crysW - 0.5) / 0.5) * (1 - scat);
       if (faceA > 0.02) {
-        var Lx = 0.36, Ly = -0.5, Lz = 0.78;
-        var flist = [];
+        var Lx = 0.36, Ly = -0.5, Lz = 0.78, flist = [];
         for (i = 0; i < faces.length; i++) {
-          var f = faces[i], A = proj[f[0]], B = proj[f[1]], C = proj[f[2]];
-          var ux = B.rx - A.rx, uy = B.ry - A.ry, uz = B.rz - A.rz;
-          var vx = C.rx - A.rx, vy = C.ry - A.ry, vz = C.rz - A.rz;
+          var f = faces[i], Ap = proj[f[0]], Bp = proj[f[1]], Cp = proj[f[2]];
+          var ux = Bp.rx - Ap.rx, uy = Bp.ry - Ap.ry, uz = Bp.rz - Ap.rz;
+          var vx = Cp.rx - Ap.rx, vy = Cp.ry - Ap.ry, vz = Cp.rz - Ap.rz;
           var nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx;
           var nl = Math.sqrt(nx * nx + ny * ny + nz * nz) || 1;
           nx /= nl; ny /= nl; nz /= nl;
-          flist.push({ A: A, B: B, C: C, facing: nx * Lx + ny * Ly + nz * Lz, front: nz, z: (A.rz + B.rz + C.rz) / 3 });
+          flist.push({ A: Ap, B: Bp, C: Cp, facing: nx * Lx + ny * Ly + nz * Lz, front: nz, z: (Ap.rz + Bp.rz + Cp.rz) / 3 });
         }
         flist.sort(function (a2, b2) { return a2.z - b2.z; });
         for (i = 0; i < flist.length; i++) {
@@ -483,75 +421,36 @@
         }
       }
 
-      // structural links of the current shape (knot / rings / helix)
-      var linkA = (shape.links && shape.links !== 'proximity') ? smooth((morph - 0.45) / 0.45) * (1 - scatGlobal) : 0;
-      if (linkA > 0.02) {
+      // structural lines: crossfade A's web out, B's web in
+      function drawLinks(S, alpha) {
+        if (!S.links || alpha < 0.02) return;
         ctx.lineWidth = 1;
-        var L2 = shape.links;
-        for (i = 0; i < L2.length; i++) {
-          var a3 = proj[L2[i][0]], b3 = proj[L2[i][1]];
+        for (var li = 0; li < S.links.length; li++) {
+          var a3 = proj[S.links[li][0]], b3 = proj[S.links[li][1]];
           if (a3.rz >= CAM - 0.2 || b3.rz >= CAM - 0.2) continue;
           var dpz = (a3.dep + b3.dep) / 2;
-          ctx.strokeStyle = 'rgba(' + Math.round(CR) + ',' + Math.round(CG) + ',' + Math.round(CB) + ',' + ((0.06 + dpz * 0.3) * linkA).toFixed(3) + ')';
+          ctx.strokeStyle = 'rgba(178,212,255,' + ((0.06 + dpz * 0.28) * alpha).toFixed(3) + ')';
           ctx.beginPath(); ctx.moveTo(a3.sx, a3.sy); ctx.lineTo(b3.sx, b3.sy); ctx.stroke();
         }
       }
+      drawLinks(A, (1 - lt) * (1 - scat));
+      if (ib !== ia) drawLinks(B, lt * (1 - scat));
 
-      // neural proximity web — during flight/scatter, or always for the neural sphere
-      var webA = Math.max(morphFlight, scatGlobal * 0.9, shape.links === 'proximity' ? smooth(morph) * 0.55 : 0);
-      if (webA > 0.05) {
-        ctx.lineWidth = 0.7;
-        var LINKD = 86, step = N > 200 ? 2 : 1;
-        for (i = 0; i < N; i += step) {
-          var pi = proj[i];
-          if (pi.rz >= CAM - 0.2) continue;
-          for (var jn = i + step; jn < N; jn += step) {
-            var pj = proj[jn];
-            var ddx = pi.sx - pj.sx; if (ddx > LINKD || ddx < -LINKD) continue;
-            var ddy = pi.sy - pj.sy; if (ddy > LINKD || ddy < -LINKD) continue;
-            var dd = Math.sqrt(ddx * ddx + ddy * ddy);
-            if (dd > LINKD) continue;
-            var la = (1 - dd / LINKD) * 0.32 * webA * (0.4 + (pi.dep + pj.dep) * 0.3);
-            ctx.strokeStyle = 'rgba(' + Math.round(CR) + ',' + Math.round(CG + 10) + ',255,' + la.toFixed(3) + ')';
-            ctx.beginPath(); ctx.moveTo(pi.sx, pi.sy); ctx.lineTo(pj.sx, pj.sy); ctx.stroke();
-          }
-        }
-      }
-
-      // particles: motion trails + additive glow dots
+      // ice particles
       ctx.globalCompositeOperation = 'lighter';
       for (i = 0; i < N; i++) {
         p = proj[i];
         if (p.rz >= CAM - 0.2) continue;
         var twk = reduce ? 1 : (0.7 + 0.3 * Math.sin(t * 0.0016 + p.ph));
         var dep2 = p.dep < 0 ? 0 : p.dep;
-        var a4 = (0.16 + dep2 * 0.34 + p.sc * 0.26) * twk;
-        var rad2 = 0.7 + dep2 * 1.6 + p.sc * 0.9;
+        var a4 = (0.16 + dep2 * 0.34 + p.sc * 0.22) * twk;
+        var rad2 = 0.7 + dep2 * 1.6 + p.sc * 0.8;
         if (a4 <= 0) continue;
-        // trail while moving fast (scatter / morph / fleeing cursor)
-        var vdx = p.sx - p.pxp, vdy = p.sy - p.pyp;
-        var spd = Math.sqrt(vdx * vdx + vdy * vdy);
-        if (spd > 2.2 && p.sc > 0.1) {
-          var ta = Math.min(0.35, spd * 0.02) * p.sc;
-          ctx.strokeStyle = 'rgba(' + Math.round(CR) + ',' + Math.round(CG) + ',255,' + ta.toFixed(3) + ')';
-          ctx.lineWidth = rad2 * 0.9;
-          ctx.beginPath(); ctx.moveTo(p.pxp, p.pyp); ctx.lineTo(p.sx, p.sy); ctx.stroke();
-        }
-        var cr2 = Math.round(CR + p.sc * (255 - CR) * 0.25);
-        var cg2 = Math.round(CG + p.sc * 25);
         ctx.beginPath();
-        ctx.fillStyle = 'rgba(' + cr2 + ',' + cg2 + ',255,' + a4.toFixed(3) + ')';
+        ctx.fillStyle = 'rgba(' + Math.round(185 + p.sc * 40) + ',' + Math.round(218 + p.sc * 20) + ',255,' + a4.toFixed(3) + ')';
         ctx.arc(p.sx, p.sy, rad2, 0, 6.2832); ctx.fill();
       }
       ctx.globalCompositeOperation = 'source-over';
-
-      // shockwave rings (visible pulse)
-      for (i = 0; i < waves.length; i++) {
-        var W2 = waves[i];
-        ctx.strokeStyle = 'rgba(' + Math.round(CR) + ',' + Math.round(CG) + ',255,' + (W2.a * 0.35).toFixed(3) + ')';
-        ctx.lineWidth = 1.4;
-        ctx.beginPath(); ctx.arc(W2.x, W2.y, W2.r, 0, 6.2832); ctx.stroke();
-      }
     }
 
     function loop(t) {
@@ -564,13 +463,14 @@
     function stop() { if (raf) { cancelAnimationFrame(raf); raf = null; } }
 
     build();
+    readScroll(); prog = progT;
     draw(0);
     if (!reduce) start();
 
     var rt;
     window.addEventListener('resize', function () {
       clearTimeout(rt);
-      rt = setTimeout(function () { build(); draw(0); }, 200);
+      rt = setTimeout(function () { build(); readScroll(); draw(0); }, 200);
     });
     if (!reduce && window.matchMedia && window.matchMedia('(pointer:fine)').matches) {
       window.addEventListener('pointermove', onMove, { passive: true });
@@ -578,44 +478,17 @@
       window.addEventListener('blur', offMouse);
     }
     if (!reduce) {
-      // click / tap → shockwave through the body
-      window.addEventListener('pointerdown', function (e) {
-        waves.push({ x: e.clientX, y: e.clientY, r: 10, a: 1 });
-        if (waves.length > 4) waves.shift();
-        if (!raf && visible) start();
-      }, { passive: true });
-
       window.addEventListener('scroll', function () {
         var y = window.pageYOffset || 0;
         var dY = y - lastScrollY;
         spinVel += dY * 0.00002;
-        disp += Math.min(0.55, Math.abs(dY) * 0.011);
-        if (disp > 1) disp = 1;
+        disp += Math.min(0.4, Math.abs(dY) * 0.006);   // lighter scatter than before
+        if (disp > 0.85) disp = 0.85;
         lastScrollY = y;
         if (spinVel > 0.05) spinVel = 0.05; else if (spinVel < -0.05) spinVel = -0.05;
+        readScroll();
         if (!raf && visible) start();
       }, { passive: true });
-
-      // sections drive the figure: the body re-forms into a new shape per section
-      var hasExplicit = document.querySelector('section[data-shape]');
-      var isIndex = !/uslugi|keysy|o-studii|kontakty/.test((location.pathname || '').toLowerCase());
-      var secs = document.querySelectorAll('section');
-      if ((hasExplicit || isIndex) && secs.length > 2) {
-        var order = [];
-        for (var s2 = 0; s2 < secs.length; s2++) {
-          var ds = secs[s2].getAttribute('data-shape');
-          order.push(ds != null ? parseInt(ds, 10) : (s2 % 5));
-        }
-        var sio = new IntersectionObserver(function (entries) {
-          for (var e2 = 0; e2 < entries.length; e2++) {
-            if (entries[e2].isIntersecting) {
-              var idx = order[Array.prototype.indexOf.call(secs, entries[e2].target)];
-              if (!isNaN(idx)) setShape(idx % 5);
-            }
-          }
-        }, { threshold: 0.45 });
-        for (s2 = 0; s2 < secs.length; s2++) sio.observe(secs[s2]);
-      }
     }
     if ('IntersectionObserver' in window) {
       new IntersectionObserver(function (e) {
