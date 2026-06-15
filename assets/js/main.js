@@ -125,161 +125,131 @@
   }
 
   /* ===========================================================
-     NEURAL MONOLITH — many inputs branching and converging into
-     one structure (a progressive neural network). Particles
-     assemble onto its nodes + connections, hold, scatter into a
-     halo cloud, reassemble. Time-driven (never scroll-coupled),
-     gentle cursor repulsion. On-theme for an AI studio.
+     NEURAL ZOOM — a progressive neural network (inputs branch and
+     converge to one core). Scroll drives an infinite self-similar
+     zoom: as you scroll down the camera dives into the core, the
+     net scatters into particles and an identical net resolves
+     inside it — endlessly. Scroll is smoothed so it never glitches.
+     Figure sits to the right on the first screen.
      =========================================================== */
   function setupNeural(canvas, reduce) {
     var ctx = canvas.getContext('2d');
     var DPR = Math.min(window.devicePixelRatio || 1, 2);
-    var w = 0, h = 0, cx = 0, cy = 0, R = 0, raf = null, visible = true, last = 0, built = false;
-    var rotY = 0, TC = 0.9131, TS = 0.4078;          // fixed ~24° tilt
-    var mxp = -1e5, myp = -1e5;
-    var targets = [], parts = [], BASE = 0, nodes = [], edges = [];
-    var CORE = '#ff7a3d';                            // brand-orange converged core
+    var w = 0, h = 0, fx = 0, fy = 0, R = 0, raf = null, visible = true, last = 0, built = false;
+    var rotY = 0, TC = 0.9131, TS = 0.4078;
+    var nodes = [], edges = [], pts = [], dust = [];
+    var CORE = '#ff7a3d';
+    var scrollT = 0, prog = 0;                 // scroll fraction (raw → smoothed)
+    var tiltT = 0, tilt = 0;                   // gentle cursor parallax on rotation
+    var K = 5.2, LEVELS = 5;                   // zoom ratio per level · zoom levels over the page
 
     function rnd(a, b) { return a + Math.random() * (b - a); }
     function smooth(x) { x = x < 0 ? 0 : x > 1 ? 1 : x; return x * x * (3 - 2 * x); }
-    var asm = 1, ASM_PERIOD = 11000;
-    function asmAt(tm) {
-      var p = tm % ASM_PERIOD;
-      if (p < 4200) return 1;
-      p -= 4200; if (p < 2600) return 1 - smooth(p / 2600);
-      p -= 2600; if (p < 1600) return 0;
-      p -= 1600; return smooth(p / 2600);
-    }
 
-    function buildTargets() {
-      nodes = []; edges = []; targets = [];
+    function buildGeo() {
+      nodes = []; edges = []; pts = [];
       var mobile = w < 760, i, k;
       var counts = mobile ? [30, 22, 15, 9, 5, 2] : [58, 44, 32, 21, 12, 4];
       var L = counts.length, golden = Math.PI * (3 - Math.sqrt(5)), layerStart = [];
       for (var li = 0; li < L; li++) {
         layerStart[li] = nodes.length;
-        var z = -1.15 + 2.3 * li / (L - 1);
-        var rad = 1.12 - 1.0 * (li / (L - 1));        // funnel: wide inputs → tight core
-        var nc = counts[li];
+        var z = -1.15 + 2.3 * li / (L - 1), rad = 1.12 - 1.0 * (li / (L - 1)), nc = counts[li];
         for (k = 0; k < nc; k++) {
           var ang = golden * k + li * 0.7, rr = rad * Math.sqrt((k + 0.5) / nc);
           nodes.push({ x: Math.cos(ang) * rr, y: Math.sin(ang) * rr, z: z, last: li === L - 1 });
         }
       }
-      // edges: each node branches to its 2 nearest in the next layer
       for (li = 0; li < L - 1; li++) {
         var a0 = layerStart[li], a1 = layerStart[li + 1], b1 = (li + 2 < L ? layerStart[li + 2] : nodes.length);
         for (var ai = a0; ai < a1; ai++) {
           var best = [];
-          for (var bi = a1; bi < b1; bi++) {
-            var dx = nodes[ai].x - nodes[bi].x, dy = nodes[ai].y - nodes[bi].y;
-            best.push([dx * dx + dy * dy, bi]);
-          }
+          for (var bi = a1; bi < b1; bi++) { var dx = nodes[ai].x - nodes[bi].x, dy = nodes[ai].y - nodes[bi].y; best.push([dx * dx + dy * dy, bi]); }
           best.sort(function (p, q) { return p[0] - q[0]; });
           for (var e = 0; e < Math.min(3, best.length); e++) edges.push([ai, best[e][1]]);
         }
       }
-      // particle targets: the nodes themselves + points strung along every edge
-      for (i = 0; i < nodes.length; i++) {
-        var nn = nodes[i];
-        targets.push({ x: nn.x, y: nn.y, z: nn.z, a0: 0.36, a1: 0.6, node: 1, col: nn.last ? CORE : null });
-      }
+      for (i = 0; i < nodes.length; i++) { var nn = nodes[i]; pts.push({ x: nn.x, y: nn.y, z: nn.z, a0: 0.36, a1: 0.6, node: 1, col: nn.last ? CORE : null }); }
       var SEG = mobile ? 3 : 4;
       for (i = 0; i < edges.length; i++) {
         var A = nodes[edges[i][0]], B = nodes[edges[i][1]];
-        for (var sg = 1; sg <= SEG; sg++) {
-          var tt = sg / (SEG + 1);
-          targets.push({ x: A.x + (B.x - A.x) * tt, y: A.y + (B.y - A.y) * tt, z: A.z + (B.z - A.z) * tt, a0: 0.07, a1: 0.27, node: 0, col: null });
-        }
+        for (var sg = 1; sg <= SEG; sg++) { var tt = sg / (SEG + 1); pts.push({ x: A.x + (B.x - A.x) * tt, y: A.y + (B.y - A.y) * tt, z: A.z + (B.z - A.z) * tt, a0: 0.07, a1: 0.27, node: 0, col: null }); }
       }
-      BASE = targets.length;
     }
     function build() {
       var rect = canvas.getBoundingClientRect(); w = rect.width; h = rect.height;
       if (!w || !h) return;
       canvas.width = Math.round(w * DPR); canvas.height = Math.round(h * DPR);
       ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-      cx = w * (w < 760 ? 0.5 : 0.6); cy = h * 0.44; R = 0.30 * Math.min(w * 0.9, h);
-      buildTargets();
-      var dust = Math.round(w * h / 17000), total = BASE + dust, prev = parts, i;
-      parts = [];
-      for (i = 0; i < total; i++) {
-        var p = prev[i];
-        var ang = Math.random() * 6.2832, rad = R * (1.7 + Math.random() * 2.3);
-        parts.push({ x: p ? p.x : rnd(0, w), y: p ? p.y : rnd(0, h), vx: 0, vy: 0,
-                     ph: Math.random() * 6.2832, bx: rnd(0, w), by: rnd(0, h),
-                     sax: cx + Math.cos(ang) * rad, say: cy + Math.sin(ang) * rad * 0.85,
-                     o: Math.random() * 0.32 });
-      }
+      fx = w * (w < 760 ? 0.5 : 0.72); fy = h * (w < 760 ? 0.40 : 0.44); R = 0.27 * Math.min(w * 0.9, h);
+      buildGeo();
+      dust = []; var dn = Math.round(w * h / 17000);
+      for (var i = 0; i < dn; i++) dust.push({ x: rnd(0, w), y: rnd(0, h), bx: rnd(0, w), by: rnd(0, h), ph: Math.random() * 6.2832 });
       built = true;
     }
-    function project(p) {
-      var c = Math.cos(rotY), s = Math.sin(rotY);
-      var rx = p.x * c + p.z * s, rz = -p.x * s + p.z * c, ry = p.y;
-      var sy = TC * ry - TS * rz, dz = TS * ry + TC * rz;
-      return [cx + rx * R, cy - sy * R, dz];
+    function proj(p) {
+      var ry = rotY + tilt, c = Math.cos(ry), s = Math.sin(ry);
+      var rx = p.x * c + p.z * s, rz = -p.x * s + p.z * c, py = p.y;
+      var sy = TC * py - TS * rz, dz = TS * py + TC * rz;
+      return [fx + rx * R, fy - sy * R, dz];
     }
-    var ci = 0;
-    function place(sx, sy, alpha, size, col) {
-      var a = parts[ci++]; if (!a) return;
-      var gp = smooth(asm * 1.32 - a.o);
-      var txx = a.sax + (sx - a.sax) * gp, txy = a.say + (sy - a.say) * gp;
-      var ox = (txx - a.x) * 0.014, oy = (txy - a.y) * 0.014;
-      var ux = a.x - mxp, uy = a.y - myp, d2 = ux * ux + uy * uy;
-      if (d2 < 16900) { var d = Math.sqrt(d2) || 1, f = (130 - d) / 130 * 4.0; ox += ux / d * f; oy += uy / d * f; }
-      a.vx = (a.vx + ox) * 0.91; a.vy = (a.vy + oy) * 0.91; a.x += a.vx; a.y += a.vy;
-      if (col) { ctx.fillStyle = col; } else if (ctx.fillStyle !== '#ece7d8') ctx.fillStyle = '#ece7d8';
-      ctx.globalAlpha = alpha * (0.45 + 0.55 * gp);
-      ctx.fillRect(a.x, a.y, size, size);
+    function renderNet(scale, alpha) {
+      if (alpha <= 0.012) return;
+      var i, PA, PB, ax, ay, bx, by, dep;
+      ctx.lineWidth = 1;
+      for (i = 0; i < edges.length; i++) {
+        PA = proj(nodes[edges[i][0]]); PB = proj(nodes[edges[i][1]]);
+        ax = fx + (PA[0] - fx) * scale; ay = fy + (PA[1] - fy) * scale;
+        bx = fx + (PB[0] - fx) * scale; by = fy + (PB[1] - fy) * scale;
+        if ((ax < -40 && bx < -40) || (ax > w + 40 && bx > w + 40) || (ay < -40 && by < -40) || (ay > h + 40 && by > h + 40)) continue;
+        dep = ((PA[2] + PB[2]) * 0.5 / 1.4 + 1) / 2;
+        ctx.strokeStyle = 'rgba(236,231,216,' + ((0.06 + dep * 0.13) * alpha).toFixed(3) + ')';
+        ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(bx, by); ctx.stroke();
+      }
+      for (i = 0; i < pts.length; i++) {
+        var T = pts[i], P = proj(T);
+        var px = fx + (P[0] - fx) * scale, py = fy + (P[1] - fy) * scale;
+        if (px < -10 || px > w + 10 || py < -10 || py > h + 10) continue;
+        dep = (P[2] / 1.4 + 1) / 2;
+        ctx.globalAlpha = (T.a0 + T.a1 * dep) * alpha;
+        ctx.fillStyle = T.col || '#ece7d8';
+        var sz = T.node ? (T.col ? 3.4 : 2.2) * (scale > 1 ? Math.min(1.8, scale) : 1) : 1.3;
+        ctx.fillRect(px - sz / 2, py - sz / 2, sz, sz);
+      }
     }
     function draw(t) {
       if (!built) return;
       ctx.clearRect(0, 0, w, h);
-      if (!reduce) { rotY += 0.0038; asm = asmAt(t); }
-      var gAll = smooth(asm), i, P, dep;
-      // connections (branches) — faint, fade with the assembly
-      if (gAll > 0.04) {
-        ctx.lineWidth = 1;
-        for (i = 0; i < edges.length; i++) {
-          var PA = project(nodes[edges[i][0]]), PB = project(nodes[edges[i][1]]);
-          dep = ((PA[2] + PB[2]) * 0.5 / 1.4 + 1) / 2;
-          ctx.strokeStyle = 'rgba(236,231,216,' + ((0.07 + dep * 0.14) * gAll).toFixed(3) + ')';
-          ctx.beginPath(); ctx.moveTo(PA[0], PA[1]); ctx.lineTo(PB[0], PB[1]); ctx.stroke();
-        }
-      }
-      // particles assembling onto nodes + edge strands
-      ctx.fillStyle = '#ece7d8'; ci = 0;
-      for (i = 0; i < targets.length; i++) {
-        var T = targets[i]; P = project(T); dep = (P[2] / 1.4 + 1) / 2;
-        place(P[0], P[1], T.a0 + T.a1 * dep, T.node ? (T.col ? 3.8 : 2.4) : 1.3, T.col);
-      }
-      // ambient dust
+      if (!reduce) { rotY += 0.0024; prog += (scrollT - prog) * 0.07; tilt += (tiltT - tilt) * 0.05; }
+      // ambient dust (full-screen, untouched by the zoom)
       ctx.fillStyle = '#ece7d8';
-      for (i = ci; i < parts.length; i++) {
-        var r = parts[i];
+      for (var d = 0; d < dust.length; d++) {
+        var r = dust[d];
         var lx = r.bx + 40 * Math.cos(0.00026 * t + r.ph), ly = r.by + 40 * Math.sin(0.00032 * t + r.ph);
-        var ox = (lx - r.x) * 0.01, oy = (ly - r.y) * 0.01;
-        var ux = r.x - mxp, uy = r.y - myp, d2 = ux * ux + uy * uy;
-        if (d2 < 16900) { var d = Math.sqrt(d2) || 1, f = (130 - d) / 130 * 3.2; ox += ux / d * f; oy += uy / d * f; }
-        r.vx = (r.vx + ox) * 0.91; r.vy = (r.vy + oy) * 0.91; r.x += r.vx; r.y += r.vy;
+        r.x += (lx - r.x) * 0.01; r.y += (ly - r.y) * 0.01;
         ctx.globalAlpha = 0.1; ctx.fillRect(r.x, r.y, 1, 1);
       }
+      // infinite self-similar zoom driven by scroll
+      var zd = prog * LEVELS, f = zd - Math.floor(zd);
+      renderNet(Math.pow(K, f - 1), smooth(f / 0.5));           // inner net resolving (behind)
+      renderNet(Math.pow(K, f), 1 - smooth((f - 0.5) / 0.5));   // outer net diving past (front)
       ctx.globalAlpha = 1;
     }
     function loop(t) { raf = null; if (!visible) return; if (t - last > 16) { draw(t); last = t; } if (!reduce) raf = requestAnimationFrame(loop); }
     function start() { if (!raf) raf = requestAnimationFrame(loop); }
     function stop() { if (raf) { cancelAnimationFrame(raf); raf = null; } }
-    build(); draw(0); if (!reduce) start();
+    function readScroll() {
+      var de = document.documentElement, max = (de.scrollHeight - de.clientHeight) || 1;
+      scrollT = Math.min(1, Math.max(0, (window.pageYOffset || 0) / max));
+    }
+    build(); readScroll(); prog = scrollT; draw(0); if (!reduce) start();
     var rt;
-    window.addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(function () { build(); draw(0); }, 200); });
+    window.addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(function () { build(); readScroll(); draw(0); }, 200); });
+    if (!reduce) window.addEventListener('scroll', function () { readScroll(); if (!raf && visible) start(); }, { passive: true });
     if (!reduce && window.matchMedia && window.matchMedia('(hover:hover) and (pointer:fine)').matches) {
-      window.addEventListener('pointermove', function (e) { mxp = e.clientX; myp = e.clientY; }, { passive: true });
-      window.addEventListener('pointerleave', function () { mxp = -1e5; myp = -1e5; }, { passive: true });
-      window.addEventListener('blur', function () { mxp = -1e5; myp = -1e5; });
+      window.addEventListener('pointermove', function (e) { tiltT = ((e.clientX / w) - 0.5) * 0.5; }, { passive: true });
+      window.addEventListener('pointerleave', function () { tiltT = 0; }, { passive: true });
     }
-    if ('IntersectionObserver' in window) {
-      new IntersectionObserver(function (e) { visible = e[0].isIntersecting; if (visible && !reduce) start(); else stop(); }, { threshold: 0 }).observe(canvas);
-    }
+    if ('IntersectionObserver' in window) { new IntersectionObserver(function (e) { visible = e[0].isIntersecting; if (visible && !reduce) start(); else stop(); }, { threshold: 0 }).observe(canvas); }
     document.addEventListener('visibilitychange', function () { if (document.hidden) stop(); else if (visible && !reduce) start(); });
   }
 
