@@ -125,26 +125,26 @@
   }
 
   /* ===========================================================
-     NEURAL ZOOM — a progressive neural network (inputs branch and
-     converge to one core). Scroll drives an infinite self-similar
-     zoom: as you scroll down the camera dives into the core, the
-     net scatters into particles and an identical net resolves
-     inside it — endlessly. Scroll is smoothed so it never glitches.
-     Figure sits to the right on the first screen.
+     NEURAL JOURNEY — a single non-looping cinematic the user
+     scrubs with the page scroll. Phases, in order:
+       approach → split into particles → signals flow along the
+       neurons → a new network is born from one neuron → it
+       branches into several logics → settle.
+     Scroll is eased into a smoothed progress so it never glitches.
      =========================================================== */
   function setupNeural(canvas, reduce) {
     var ctx = canvas.getContext('2d');
     var DPR = Math.min(window.devicePixelRatio || 1, 2);
     var w = 0, h = 0, fx = 0, fy = 0, R = 0, raf = null, visible = true, last = 0, built = false;
-    var rotY = 0, TC = 0.9131, TS = 0.4078;
-    var nodes = [], edges = [], pts = [], dust = [];
+    var rotY = 0, TC = 0.9131, TS = 0.4078, tiltT = 0, tilt = 0;
+    var nodes = [], edges = [], pts = [], parts = [], dust = [], NN = 0;
     var CORE = '#ff7a3d';
-    var scrollT = 0, prog = 0;                 // scroll fraction (raw → smoothed)
-    var tiltT = 0, tilt = 0;                   // gentle cursor parallax on rotation
-    var K = 5.2, LEVELS = 5;                   // zoom ratio per level · zoom levels over the page
+    var scrollT = 0, prog = 0;
 
     function rnd(a, b) { return a + Math.random() * (b - a); }
     function smooth(x) { x = x < 0 ? 0 : x > 1 ? 1 : x; return x * x * (3 - 2 * x); }
+    function bl(a, b, u) { return { x: a.x + (b.x - a.x) * u, y: a.y + (b.y - a.y) * u, z: a.z + (b.z - a.z) * u }; }
+    function sh(o, s, off) { return { x: o.x * s + (off ? off.x : 0), y: o.y * s + (off ? off.y : 0), z: o.z * s + (off ? off.z : 0) }; }
 
     function buildGeo() {
       nodes = []; edges = []; pts = [];
@@ -154,10 +154,7 @@
       for (var li = 0; li < L; li++) {
         layerStart[li] = nodes.length;
         var z = -1.15 + 2.3 * li / (L - 1), rad = 1.12 - 1.0 * (li / (L - 1)), nc = counts[li];
-        for (k = 0; k < nc; k++) {
-          var ang = golden * k + li * 0.7, rr = rad * Math.sqrt((k + 0.5) / nc);
-          nodes.push({ x: Math.cos(ang) * rr, y: Math.sin(ang) * rr, z: z, last: li === L - 1 });
-        }
+        for (k = 0; k < nc; k++) { var ang = golden * k + li * 0.7, rr = rad * Math.sqrt((k + 0.5) / nc); nodes.push({ x: Math.cos(ang) * rr, y: Math.sin(ang) * rr, z: z, last: li === L - 1 }); }
       }
       for (li = 0; li < L - 1; li++) {
         var a0 = layerStart[li], a1 = layerStart[li + 1], b1 = (li + 2 < L ? layerStart[li + 2] : nodes.length);
@@ -168,79 +165,107 @@
           for (var e = 0; e < Math.min(3, best.length); e++) edges.push([ai, best[e][1]]);
         }
       }
-      for (i = 0; i < nodes.length; i++) { var nn = nodes[i]; pts.push({ x: nn.x, y: nn.y, z: nn.z, a0: 0.36, a1: 0.6, node: 1, col: nn.last ? CORE : null }); }
+      // particle list: nodes first, then points strung along every edge
+      for (i = 0; i < nodes.length; i++) { var nn = nodes[i]; pts.push({ x: nn.x, y: nn.y, z: nn.z, a0: 0.36, a1: 0.6, node: 1, col: nn.last ? CORE : null, eA: i, eB: i, fo: 0 }); }
       var SEG = mobile ? 3 : 4;
       for (i = 0; i < edges.length; i++) {
         var A = nodes[edges[i][0]], B = nodes[edges[i][1]];
-        for (var sg = 1; sg <= SEG; sg++) { var tt = sg / (SEG + 1); pts.push({ x: A.x + (B.x - A.x) * tt, y: A.y + (B.y - A.y) * tt, z: A.z + (B.z - A.z) * tt, a0: 0.07, a1: 0.27, node: 0, col: null }); }
+        for (var sg = 1; sg <= SEG; sg++) { var tt = sg / (SEG + 1); pts.push({ x: A.x + (B.x - A.x) * tt, y: A.y + (B.y - A.y) * tt, z: A.z + (B.z - A.z) * tt, a0: 0.07, a1: 0.27, node: 0, col: null, eA: edges[i][0], eB: edges[i][1], fo: tt }); }
       }
+      // per-particle phase targets: scatter halo, birth (mini-net from one neuron), branch (3 logics)
+      var neuron = nodes[Math.floor(nodes.length * 0.5)];
+      var clusters = [{ x: -0.78, y: 0.18, z: 0.1 }, { x: 0.06, y: -0.52, z: 0.35 }, { x: 0.74, y: 0.30, z: -0.2 }];
+      for (i = 0; i < pts.length; i++) {
+        var q = pts[i], ang = Math.random() * 6.2832, rr2 = 1.6 + Math.random() * 1.6;
+        q.sc = { x: q.x + Math.cos(ang) * rr2, y: q.y + Math.sin(ang) * rr2 * 0.9, z: q.z + rnd(-0.5, 0.5) };
+        q.bi = sh(q, 0.26, neuron);
+        q.br = sh(q, 0.22, clusters[i % 3]);
+      }
+      NN = nodes.length;
     }
     function build() {
       var rect = canvas.getBoundingClientRect(); w = rect.width; h = rect.height;
       if (!w || !h) return;
       canvas.width = Math.round(w * DPR); canvas.height = Math.round(h * DPR);
       ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-      fx = w * (w < 760 ? 0.5 : 0.72); fy = h * (w < 760 ? 0.40 : 0.44); R = 0.27 * Math.min(w * 0.9, h);
+      fx = w * (w < 760 ? 0.5 : 0.72); fy = h * (w < 760 ? 0.4 : 0.44); R = 0.27 * Math.min(w * 0.9, h);
       buildGeo();
+      var prev = parts; parts = [];
+      for (var i = 0; i < pts.length; i++) { var pp = prev[i]; parts.push({ x: pp ? pp.x : rnd(0, w), y: pp ? pp.y : rnd(0, h), dep: 0.5 }); }
       dust = []; var dn = Math.round(w * h / 17000);
-      for (var i = 0; i < dn; i++) dust.push({ x: rnd(0, w), y: rnd(0, h), bx: rnd(0, w), by: rnd(0, h), ph: Math.random() * 6.2832 });
+      for (i = 0; i < dn; i++) dust.push({ x: rnd(0, w), y: rnd(0, h), bx: rnd(0, w), by: rnd(0, h), ph: Math.random() * 6.2832 });
       built = true;
     }
-    function proj(p) {
+    function project(p) {
       var ry = rotY + tilt, c = Math.cos(ry), s = Math.sin(ry);
       var rx = p.x * c + p.z * s, rz = -p.x * s + p.z * c, py = p.y;
       var sy = TC * py - TS * rz, dz = TS * py + TC * rz;
       return [fx + rx * R, fy - sy * R, dz];
     }
-    function renderNet(scale, alpha) {
-      if (alpha <= 0.012) return;
-      var i, PA, PB, ax, ay, bx, by, dep;
-      ctx.lineWidth = 1;
-      for (i = 0; i < edges.length; i++) {
-        PA = proj(nodes[edges[i][0]]); PB = proj(nodes[edges[i][1]]);
-        ax = fx + (PA[0] - fx) * scale; ay = fy + (PA[1] - fy) * scale;
-        bx = fx + (PB[0] - fx) * scale; by = fy + (PB[1] - fy) * scale;
-        if ((ax < -40 && bx < -40) || (ax > w + 40 && bx > w + 40) || (ay < -40 && by < -40) || (ay > h + 40 && by > h + 40)) continue;
-        dep = ((PA[2] + PB[2]) * 0.5 / 1.4 + 1) / 2;
-        ctx.strokeStyle = 'rgba(236,231,216,' + ((0.06 + dep * 0.13) * alpha).toFixed(3) + ')';
-        ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(bx, by); ctx.stroke();
-      }
-      for (i = 0; i < pts.length; i++) {
-        var T = pts[i], P = proj(T);
-        var px = fx + (P[0] - fx) * scale, py = fy + (P[1] - fy) * scale;
-        if (px < -10 || px > w + 10 || py < -10 || py > h + 10) continue;
-        dep = (P[2] / 1.4 + 1) / 2;
-        ctx.globalAlpha = (T.a0 + T.a1 * dep) * alpha;
-        ctx.fillStyle = T.col || '#ece7d8';
-        var sz = T.node ? (T.col ? 3.4 : 2.2) * (scale > 1 ? Math.min(1.8, scale) : 1) : 1.3;
-        ctx.fillRect(px - sz / 2, py - sz / 2, sz, sz);
-      }
+    function flowEdge(q, t) {
+      if (q.eA === q.eB) return { x: q.x, y: q.y, z: q.z };
+      var A = nodes[q.eA], B = nodes[q.eB], tt = (q.fo + t * 0.0001) % 1;
+      return { x: A.x + (B.x - A.x) * tt, y: A.y + (B.y - A.y) * tt, z: A.z + (B.z - A.z) * tt };
+    }
+    function pos3(q, p, t) {
+      if (p < 0.15) return bl(sh(q, 0.5), q, smooth(p / 0.15));                 // approach
+      if (p < 0.30) return bl(q, q.sc, smooth((p - 0.15) / 0.15));             // split into particles
+      if (p < 0.52) return bl(q.sc, flowEdge(q, t), smooth((p - 0.30) / 0.22)); // signals flow along neurons
+      if (p < 0.70) return bl(flowEdge(q, t), q.bi, smooth((p - 0.52) / 0.18)); // new net born from one neuron
+      if (p < 0.88) return bl(q.bi, q.br, smooth((p - 0.70) / 0.18));          // branches into several logics
+      return q.br;                                                            // settle
+    }
+    function edgeAlpha(p) {
+      if (p < 0.15) return smooth(p / 0.15);
+      if (p < 0.30) return 1 - smooth((p - 0.15) / 0.15) * 0.85;
+      if (p < 0.55) return 0.12;
+      if (p < 0.70) return 0.12 + smooth((p - 0.55) / 0.15) * 0.45;
+      if (p < 0.88) return 0.55 - smooth((p - 0.70) / 0.18) * 0.32;
+      return 0.23;
     }
     function draw(t) {
       if (!built) return;
       ctx.clearRect(0, 0, w, h);
       if (!reduce) { rotY += 0.0024; prog += (scrollT - prog) * 0.07; tilt += (tiltT - tilt) * 0.05; }
-      // ambient dust (full-screen, untouched by the zoom)
+      var p = prog, i, P, q;
+      // ambient dust
       ctx.fillStyle = '#ece7d8';
-      for (var d = 0; d < dust.length; d++) {
-        var r = dust[d];
-        var lx = r.bx + 40 * Math.cos(0.00026 * t + r.ph), ly = r.by + 40 * Math.sin(0.00032 * t + r.ph);
+      for (i = 0; i < dust.length; i++) {
+        var r = dust[i], lx = r.bx + 40 * Math.cos(0.00026 * t + r.ph), ly = r.by + 40 * Math.sin(0.00032 * t + r.ph);
         r.x += (lx - r.x) * 0.01; r.y += (ly - r.y) * 0.01;
         ctx.globalAlpha = 0.1; ctx.fillRect(r.x, r.y, 1, 1);
       }
-      // infinite self-similar zoom driven by scroll
-      var zd = prog * LEVELS, f = zd - Math.floor(zd);
-      renderNet(Math.pow(K, f - 1), smooth(f / 0.5));           // inner net resolving (behind)
-      renderNet(Math.pow(K, f), 1 - smooth((f - 0.5) / 0.5));   // outer net diving past (front)
+      // particles run the timeline
+      for (i = 0; i < pts.length; i++) {
+        q = pts[i]; P = project(pos3(q, p, t));
+        var a = parts[i]; a.x += (P[0] - a.x) * 0.14; a.y += (P[1] - a.y) * 0.14; a.dep = (P[2] / 1.4 + 1) / 2;
+      }
+      // connections follow the node particles
+      var eA = edgeAlpha(p);
+      if (eA > 0.02) {
+        ctx.lineWidth = 1;
+        for (i = 0; i < edges.length; i++) {
+          var na = parts[edges[i][0]], nb = parts[edges[i][1]];
+          var dd = (na.x - nb.x) * (na.x - nb.x) + (na.y - nb.y) * (na.y - nb.y);
+          if (dd > 90000) continue;                       // hide over-stretched links (branch phase)
+          ctx.strokeStyle = 'rgba(236,231,216,' + ((0.05 + (na.dep + nb.dep) * 0.06) * eA).toFixed(3) + ')';
+          ctx.beginPath(); ctx.moveTo(na.x, na.y); ctx.lineTo(nb.x, nb.y); ctx.stroke();
+        }
+      }
+      // dots
+      for (i = 0; i < pts.length; i++) {
+        q = pts[i]; var a2 = parts[i];
+        ctx.globalAlpha = q.a0 + q.a1 * a2.dep;
+        ctx.fillStyle = q.col || '#ece7d8';
+        var sz = q.node ? (q.col ? 3.4 : 2.2) : 1.3;
+        ctx.fillRect(a2.x - sz / 2, a2.y - sz / 2, sz, sz);
+      }
       ctx.globalAlpha = 1;
     }
     function loop(t) { raf = null; if (!visible) return; if (t - last > 16) { draw(t); last = t; } if (!reduce) raf = requestAnimationFrame(loop); }
     function start() { if (!raf) raf = requestAnimationFrame(loop); }
     function stop() { if (raf) { cancelAnimationFrame(raf); raf = null; } }
-    function readScroll() {
-      var de = document.documentElement, max = (de.scrollHeight - de.clientHeight) || 1;
-      scrollT = Math.min(1, Math.max(0, (window.pageYOffset || 0) / max));
-    }
+    function readScroll() { var de = document.documentElement, max = (de.scrollHeight - de.clientHeight) || 1; scrollT = Math.min(1, Math.max(0, (window.pageYOffset || 0) / max)); }
     build(); readScroll(); prog = scrollT; draw(0); if (!reduce) start();
     var rt;
     window.addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(function () { build(); readScroll(); draw(0); }, 200); });
@@ -252,6 +277,7 @@
     if ('IntersectionObserver' in window) { new IntersectionObserver(function (e) { visible = e[0].isIntersecting; if (visible && !reduce) start(); else stop(); }, { threshold: 0 }).observe(canvas); }
     document.addEventListener('visibilitychange', function () { if (document.hidden) stop(); else if (visible && !reduce) start(); });
   }
+
 
   function initNeural() {
     var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
