@@ -117,6 +117,26 @@
     var points = new THREE.Points(geom, mat);
     scene.add(points);
 
+    // ---------- Neural Orbit Interface: rings + module chips around the core ----------
+    var orbitRings = [], chips = [];
+    if (!reduce && !mobile) {
+      var MODS = [
+        { l: 'Sales AI', r: 2.15, a: 0.0, e: 0.34 }, { l: 'Voice Agents', r: 2.95, a: 0.95, e: 0.30 },
+        { l: 'RAG', r: 2.45, a: 1.95, e: 0.40 }, { l: 'CRM', r: 3.35, a: 2.75, e: 0.27 },
+        { l: 'MCP', r: 2.75, a: 3.65, e: 0.37 }, { l: 'Local LLM', r: 3.5, a: 4.55, e: 0.25 },
+        { l: 'CEO Assistant', r: 2.55, a: 5.45, e: 0.40 }
+      ];
+      var orbHost = document.createElement('div'); orbHost.className = 'orbit-modules'; document.body.appendChild(orbHost);
+      MODS.forEach(function (m) { var c = document.createElement('div'); c.className = 'orbit-chip'; c.innerHTML = '<i></i><span>' + m.l + '</span>'; orbHost.appendChild(c); m.el = c; chips.push(m); });
+      [2.3, 2.9, 3.5].forEach(function (rr) {
+        var seg = 128, arr = new Float32Array((seg + 1) * 3);
+        for (var si = 0; si <= seg; si++) { var aa = si / seg * 6.2832; arr[si * 3] = Math.cos(aa) * rr; arr[si * 3 + 1] = Math.sin(aa) * rr * 0.34; arr[si * 3 + 2] = Math.sin(aa) * rr * 0.5; }
+        var pg = new THREE.BufferGeometry(); pg.setAttribute('position', new THREE.BufferAttribute(arr, 3));
+        var ring = new THREE.Line(pg, new THREE.LineBasicMaterial({ color: 0x4d8dff, transparent: true, opacity: 0.1 }));
+        scene.add(ring); orbitRings.push(ring);
+      });
+    }
+
     // ---------- scroll → stage blend ----------
     var stageIdx = 0;                 // active stage from section observer
     var stageF = 0, stageFT = 0;      // smoothed stage float
@@ -179,6 +199,20 @@
       camera.position.z = 6.0 - scrollFrac * 2.6;
       camera.position.x = (mAct ? mx * 0.18 : 0);
       camera.lookAt(0, 0, 0);
+      // orbit modules: slowly revolve around the core, project to screen, fade out past hero
+      if (chips.length) {
+        var heroVis = 1 - smooth(stageF / 0.8), ot = t * 0.00006, vw = window.innerWidth, vh = window.innerHeight, cP = points.position;
+        for (var ci = 0; ci < chips.length; ci++) {
+          var m = chips[ci], aa2 = m.a + ot;
+          tmp.set(cP.x + Math.cos(aa2) * m.r, cP.y + Math.sin(aa2) * m.r * m.e, cP.z + Math.sin(aa2) * m.r * 0.5);
+          tmp.project(camera);
+          var sx = (tmp.x * 0.5 + 0.5) * vw, sy = (-tmp.y * 0.5 + 0.5) * vh, dep = 1 - Math.min(1, Math.max(0, tmp.z));
+          var el = m.el; el.style.transform = 'translate(-50%,-50%) translate(' + sx.toFixed(1) + 'px,' + sy.toFixed(1) + 'px) scale(' + (0.82 + 0.26 * dep).toFixed(2) + ')';
+          el.style.opacity = (heroVis * (0.32 + 0.68 * dep)).toFixed(2);
+          el.style.zIndex = String(100 + Math.round(dep * 40));
+        }
+        for (var rri = 0; rri < orbitRings.length; rri++) { orbitRings[rri].position.copy(cP); orbitRings[rri].rotation.y = rotY; orbitRings[rri].material.opacity = 0.1 * heroVis; }
+      }
       renderer.render(scene, camera);
       if (!reduce) raf = requestAnimationFrame(frame);
     }
