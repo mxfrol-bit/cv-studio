@@ -180,7 +180,26 @@ img{max-width:100%;display:block}
 .svc-hero__media img{width:100%;height:100%;object-fit:cover;transition:transform .7s var(--ease)}
 .svc-hero:hover .svc-hero__media img{transform:scale(1.03)}
 .svc-hero__media::after{content:"";position:absolute;inset:0;pointer-events:none;border-radius:16px;box-shadow:inset 0 0 80px rgba(2,3,9,.45)}
-/* case/service media now hold full-bleed generated art (no window chrome) */
+/* window chrome — frames each animated mockup as an app screen */
+.case__media,.svc-hero__media{padding-top:38px}
+.case__media>img,.svc-hero__media>img{border-radius:0 0 15px 15px}
+.case__media::before,.svc-hero__media::before{
+  content:"";position:absolute;top:0;left:0;right:0;height:38px;z-index:3;pointer-events:none;
+  background:
+    radial-gradient(circle 4px at 24px 19px, var(--accent) 0 4px, transparent 4.6px),
+    radial-gradient(circle 4px at 43px 19px, rgba(255,255,255,.20) 0 4px, transparent 4.6px),
+    radial-gradient(circle 4px at 62px 19px, rgba(255,255,255,.13) 0 4px, transparent 4.6px),
+    linear-gradient(180deg,#141826,#0d1019);
+  border-bottom:1px solid var(--line)}
+@media (max-width:560px){
+  .case__media,.svc-hero__media{padding-top:30px}
+  .case__media::before,.svc-hero__media::before{height:30px;
+    background:
+      radial-gradient(circle 3.4px at 20px 15px, var(--accent) 0 3.4px, transparent 4px),
+      radial-gradient(circle 3.4px at 36px 15px, rgba(255,255,255,.20) 0 3.4px, transparent 4px),
+      radial-gradient(circle 3.4px at 52px 15px, rgba(255,255,255,.13) 0 3.4px, transparent 4px),
+      linear-gradient(180deg,#141826,#0d1019)}
+}
 .svc-hero--rev .section__head{order:2}
 @media (max-width:860px){
   .svc-hero{grid-template-columns:1fr;gap:24px;margin-bottom:34px}

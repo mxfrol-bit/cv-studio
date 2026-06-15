@@ -2,7 +2,7 @@
 """
 Фирменные UI-макеты кейсов Chaos Vision (SVG, без внешних моделей).
 Каждый кейс = чистый интерфейс «продукта» в стиле сайта: тёмная панель,
-акценты indigo(#6366f1)->cyan(#22d3ee), моно-подписи. 16:10, 1600x1000.
+акценты indigo(#ff5c2e)->cyan(#ff9a4d), моно-подписи. 16:10, 1600x1000.
 Запуск: python3 tools/build_case_svgs.py -> assets/img/case-*.svg
 """
 import math, random, pathlib, html
@@ -16,7 +16,7 @@ BG_A, BG_B = "#070b18", "#04060d"
 PANEL, PANEL2, CARD = "#0b1224", "#0e1730", "#0d1428"
 LINE, LINE2 = "rgba(255,255,255,0.10)", "rgba(255,255,255,0.055)"
 INK, SUB, MUT = "#e9eefb", "#9aa6c2", "#586280"
-CY, IN = "#22d3ee", "#6366f1"
+CY, IN = "#ff9a4d", "#ff5c2e"
 
 def esc(s): return html.escape(str(s), quote=True)
 
@@ -60,7 +60,7 @@ def line(x1, y1, x2, y2, stroke=LINE, sw=1.2, op=1.0, dash=None):
 
 def chip(x, y, label, color=CY, fill_op=0.10):
     w = 26 + len(label) * 11.5
-    s = rrect(x, y, w, 34, 17, f"rgba(34,211,238,{fill_op})", stroke=color, sw=1.2, op=0.9)
+    s = rrect(x, y, w, 34, 17, f"rgba(255,154,77,{fill_op})", stroke=color, sw=1.2, op=0.9)
     s += txt(x + w/2, y + 23, label, 15, color, anchor="middle", ls=1.5)
     return s, w
 
@@ -73,8 +73,8 @@ def defs():
   <stop offset="0%" stop-color="{IN}"/><stop offset="100%" stop-color="{CY}"/>
 </linearGradient>
 <radialGradient id="glow" cx="50%" cy="0%" r="90%">
-  <stop offset="0%" stop-color="rgba(99,102,241,0.20)"/>
-  <stop offset="55%" stop-color="rgba(34,211,238,0.05)"/>
+  <stop offset="0%" stop-color="rgba(255,92,46,0.20)"/>
+  <stop offset="55%" stop-color="rgba(255,154,77,0.05)"/>
   <stop offset="100%" stop-color="rgba(0,0,0,0)"/>
 </radialGradient>
 <filter id="soft"><feGaussianBlur stdDeviation="9"/></filter>
@@ -143,7 +143,7 @@ def scene_content():
             active = (idx == 1)
             s.append(rrect(x, y, cw_, ch_, 18, CARD, CY if active else LINE, sw=1.6 if active else 1.2))
             # превью-картинка
-            s.append(rrect(x+22, y+22, cw_-44, ch_*0.46, 12, "rgba(99,102,241,0.16)", LINE2))
+            s.append(rrect(x+22, y+22, cw_-44, ch_*0.46, 12, "rgba(255,92,46,0.16)", LINE2))
             s.append(dot(x+cw_/2, y+22+ch_*0.23, 22, "url(#grad)", 0.5))
             # реальный заголовок
             s.append(txt(x+24, y+ch_*0.46+58, titles[idx], 20, INK, mono=False, weight=600))
@@ -182,7 +182,7 @@ def scene_rag():
     for i, rel in enumerate(rels):
         y = 250 + i*108
         if match[i]:
-            s.append(rrect(70, y, 1460, 88, 14, "rgba(34,211,238,0.06)", "rgba(34,211,238,0.35)"))
+            s.append(rrect(70, y, 1460, 88, 14, "rgba(255,154,77,0.06)", "rgba(255,154,77,0.35)"))
             s.append(rrect(70, y, 6, 88, 3, CY))
         else:
             s.append(line(70, y+88, 1530, y+88, LINE2, 1))
@@ -196,6 +196,11 @@ def scene_rag():
             cc, ccw = chip(1380, y+26, "MATCH", CY); s.append(cc)
         else:
             s.append(txt(1380, y+50, "—", 20, MUT))
+    # сканирующая линия — AI просматривает закупки сверху вниз
+    s.append(f'<rect x="70" width="1460" height="3" rx="2" fill="{CY}" y="248">'
+             f'<animate attributeName="y" values="248;880" dur="4.5s" repeatCount="indefinite"/>'
+             f'<animate attributeName="opacity" values="0;0.55;0.55;0" keyTimes="0;0.06;0.9;1" dur="4.5s" repeatCount="indefinite"/>'
+             f'</rect>')
     return frame("\n".join(s))
 
 def scene_assistant():
@@ -228,16 +233,22 @@ def scene_assistant():
             ("a", 470, "Три задачи с дедлайном и два договора."),
             ("u", 250, "Покажи договоры.")]
     y = 220
-    for who, w, t in msgs:
+    CYCLE = 8.0
+    for i, (who, w, t) in enumerate(msgs):
         h = 76
         if who == "u":
             x = 1490 - w
-            s.append(rrect(x, y, w, h, 18, "url(#grad)"))
-            s.append(txt(x+24, y+46, t, 17, "#ffffff", mono=False))
+            inner = rrect(x, y, w, h, 18, "url(#grad)") + txt(x+24, y+46, t, 17, "#ffffff", mono=False)
         else:
             x = 840
-            s.append(rrect(x, y, w, h, 18, "rgba(255,255,255,0.05)", LINE2))
-            s.append(txt(x+24, y+46, t, 17, "#dbe2f2", mono=False))
+            inner = rrect(x, y, w, h, 18, "rgba(255,255,255,0.05)", LINE2) + txt(x+24, y+46, t, 17, "#dbe2f2", mono=False)
+        beg = i * 0.55
+        s.append(f'<g opacity="0">{inner}'
+                 f'<animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.10;0.92;1" '
+                 f'dur="{CYCLE}s" begin="{beg:.2f}s" repeatCount="indefinite"/>'
+                 f'<animateTransform attributeName="transform" type="translate" '
+                 f'values="0 16;0 0;0 0;0 0" keyTimes="0;0.10;0.92;1" dur="{CYCLE}s" '
+                 f'begin="{beg:.2f}s" repeatCount="indefinite" additive="sum"/></g>')
         y += h + 30
     s.append(rrect(840, y+6, 650, 64, 18, "rgba(255,255,255,0.04)", LINE2))
     s.append(txt(870, y+44, "Спросить по внутренним данным…", 17, MUT))
@@ -252,6 +263,11 @@ def scene_web():
     s.append(rrect(520, 104, 560, 36, 18, "rgba(255,255,255,0.05)", LINE2))
     s.append(f'<circle cx="552" cy="122" r="7" fill="none" stroke="{CY}" stroke-width="1.6"/>')
     s.append(txt(800, 130, "chaosvision.ai", 17, SUB, anchor="middle"))
+    # полоса загрузки страницы под хромом
+    s.append(f'<rect x="70" y="152" height="3" rx="2" fill="{CY}" width="0">'
+             f'<animate attributeName="width" values="0;1460;1460" keyTimes="0;0.6;1" dur="3s" repeatCount="indefinite"/>'
+             f'<animate attributeName="opacity" values="1;1;0" keyTimes="0;0.6;1" dur="3s" repeatCount="indefinite"/>'
+             f'</rect>')
     # вьюпорт
     vx, vy = 110, 190
     s.append(dot(vx+18, vy+20, 13, "url(#grad)"))
@@ -267,7 +283,7 @@ def scene_web():
     s.append(rrect(vx, vy+330, 210, 58, 14, "url(#grad)")); s.append(txt(vx+105, vy+368, "ОБСУДИТЬ", 17, "#04060d", anchor="middle", weight=600))
     s.append(rrect(vx+230, vy+330, 190, 58, 14, "none", LINE))
     # герой-графика
-    s.append(rrect(vx+760, vy+120, 560, 290, 18, "rgba(99,102,241,0.12)", LINE2))
+    s.append(rrect(vx+760, vy+120, 560, 290, 18, "rgba(255,92,46,0.12)", LINE2))
     s.append(dot(vx+1040, vy+265, 70, "url(#grad)", 0.55))
     s.append(dot(vx+1040, vy+265, 70, "none"))
     # фичи
@@ -301,7 +317,7 @@ def scene_agents():
         base = (f'<path d="{d}" fill="none" stroke="{CY}" stroke-width="2.2" '
                 f'opacity="0.55" marker-end="url(#arw)"/>')
         # бегущий импульс по проводу
-        pulse = (f'<path d="{d}" fill="none" stroke="#aef3ff" stroke-width="3" stroke-linecap="round" '
+        pulse = (f'<path d="{d}" fill="none" stroke="#ffe3c2" stroke-width="3" stroke-linecap="round" '
                  f'stroke-dasharray="16 460" opacity="0.9">'
                  f'<animate attributeName="stroke-dashoffset" values="476;0" dur="2.4s" '
                  f'begin="{delay:.2f}s" repeatCount="indefinite"/></path>')
@@ -310,7 +326,7 @@ def scene_agents():
         s.append(wire(a, b, delay=k*0.4))
     for key, (x, y, label, col, active) in nodes.items():
         if active:
-            s.append(rrect(x-6, y-6, NW+12, NH+12, 20, "none", "rgba(34,211,238,0.25)", 2))
+            s.append(rrect(x-6, y-6, NW+12, NH+12, 20, "none", "rgba(255,154,77,0.25)", 2))
         s.append(rrect(x, y, NW, NH, 16, PANEL, col if active else LINE, 1.8 if active else 1.2))
         s.append(rrect(x+22, y+30, 44, 44, 11, "none", col, 1.8))
         s.append(dot(x+44, y+52, 7, col, .9))
