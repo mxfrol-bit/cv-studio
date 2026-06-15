@@ -297,7 +297,10 @@
       vg.setAttribute('aria-hidden', 'true');
       document.body.insertBefore(vg, canvas.nextSibling);
     }
-    setupNeural(canvas, reduce);
+    // Prefer the WebGL scroll-journey; fall back to the canvas-2D engine.
+    var glOk = false;
+    try { glOk = !!(window.initNeuralGL && window.initNeuralGL(canvas, reduce)); } catch (e) { glOk = false; }
+    if (!glOk) setupNeural(canvas, reduce);
   }
 
   /* ---------- scroll-driven parallax for the grid layer ---------- */

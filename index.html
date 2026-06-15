@@ -15,7 +15,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600;700&family=Onest:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/style.css?v=20260604z">
+<link rel="stylesheet" href="assets/css/style.css?v=20260604aa">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -71,7 +71,7 @@
 </header>
 
 <!-- ===== hero ===== -->
-<section class="dark hero">
+<section class="dark hero" data-neural-stage="birth">
   <span class="glow glow--1"></span>
   <span class="glow glow--2"></span>
   <span class="grid-fx"></span>
@@ -118,7 +118,7 @@
 </div>
 
 <!-- ===== services ===== -->
-<section class="section section--soft" id="uslugi">
+<section class="section section--soft" id="uslugi" data-neural-stage="products">
   <div class="container">
     <div class="section__head" data-reveal>
       <span class="eyebrow">Что мы делаем</span>
@@ -159,7 +159,7 @@
 </section>
 
 <!-- ===== why us (dark) ===== -->
-<section class="dark section" id="why">
+<section class="dark section" id="why" data-neural-stage="engineering">
   <span class="glow glow--2" style="opacity:.3"></span>
   <div class="container">
     <div class="section__head" data-reveal>
@@ -203,7 +203,7 @@
 </section>
 
 <!-- ===== cases preview ===== -->
-<section class="section" id="keysy">
+<section class="section" id="keysy" data-neural-stage="cases">
   <div class="container">
     <div class="section__head" data-reveal>
       <span class="eyebrow">Наши кейсы</span>
@@ -272,7 +272,7 @@
 </section>
 
 <!-- ===== process ===== -->
-<section class="dark section">
+<section class="dark section" data-neural-stage="process">
   <span class="glow glow--1" style="opacity:.3"></span>
   <div class="container">
     <div class="section__head" data-reveal>
@@ -301,7 +301,7 @@
 </section>
 
 <!-- ===== stat band ===== -->
-<section class="section section--soft">
+<section class="section section--soft" data-neural-stage="collapse">
   <div class="container">
     <div class="statband">
       <div class="statband__item" data-reveal><b>3–6</b><span>недель до MVP</span></div>
@@ -313,7 +313,7 @@
 </section>
 
 <!-- ===== CTA ===== -->
-<section class="section">
+<section class="section" data-neural-stage="rebirth">
   <div class="container">
     <div class="cta" data-reveal>
       <span class="glow glow--1" style="opacity:.35"></span>
@@ -372,6 +372,8 @@
   </div>
 </footer>
 
-<script src="assets/js/main.js?v=20260604z"></script>
+<script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+<script src="assets/js/neural-bg.js?v=20260604aa"></script>
+<script src="assets/js/main.js?v=20260604aa"></script>
 </body>
 </html>
