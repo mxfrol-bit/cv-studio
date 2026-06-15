@@ -125,63 +125,87 @@
   }
 
   /* ===========================================================
-     CONSTELLATION — calm rotating particle figure
-     (ported from the matrix-engine landing: Fibonacci sphere +
-     two orbital rings + drifting dust). Motion is TIME-driven,
-     never coupled to scroll → smooth, no scroll glitches.
-     Particles ease toward targets; gentle cursor repulsion.
+     NEURAL MONOLITH — many inputs branching and converging into
+     one structure (a progressive neural network). Particles
+     assemble onto its nodes + connections, hold, scatter into a
+     halo cloud, reassemble. Time-driven (never scroll-coupled),
+     gentle cursor repulsion. On-theme for an AI studio.
      =========================================================== */
   function setupNeural(canvas, reduce) {
     var ctx = canvas.getContext('2d');
     var DPR = Math.min(window.devicePixelRatio || 1, 2);
     var w = 0, h = 0, cx = 0, cy = 0, R = 0, raf = null, visible = true, last = 0, built = false;
-    var rotY = 0, rot1 = 0, rot2 = Math.PI;
-    var TC = 0.9131, TS = 0.4078;                 // fixed ~24° tilt of the whole body
-    var mxp = -1e5, myp = -1e5;                   // cursor (canvas px)
-    var targets = [], parts = [], BASE = 0, clA = [], clB = [];
+    var rotY = 0, TC = 0.9131, TS = 0.4078;          // fixed ~24° tilt
+    var mxp = -1e5, myp = -1e5;
+    var targets = [], parts = [], BASE = 0, nodes = [], edges = [];
+    var CORE = '#ff7a3d';                            // brand-orange converged core
 
     function rnd(a, b) { return a + Math.random() * (b - a); }
     function smooth(x) { x = x < 0 ? 0 : x > 1 ? 1 : x; return x * x * (3 - 2 * x); }
-    // assemble/disassemble auto-cycle: 1 = figure assembled, 0 = scattered cloud
     var asm = 1, ASM_PERIOD = 11000;
     function asmAt(tm) {
       var p = tm % ASM_PERIOD;
-      if (p < 4200) return 1;                          // hold the figure
-      p -= 4200; if (p < 2600) return 1 - smooth(p / 2600); // disperse to cloud
-      p -= 2600; if (p < 1600) return 0;               // hold the cloud
-      p -= 1600; return smooth(p / 2600);              // reassemble
+      if (p < 4200) return 1;
+      p -= 4200; if (p < 2600) return 1 - smooth(p / 2600);
+      p -= 2600; if (p < 1600) return 0;
+      p -= 1600; return smooth(p / 2600);
     }
-    function ringPoint(rad, lat, ang) {
-      var rx = Math.cos(ang) * rad, ry = Math.sin(ang) * rad, ca = Math.cos(lat);
-      return { x: rx, y: -ry * Math.sin(lat), z: ry * ca };
-    }
+
     function buildTargets() {
-      targets = []; clA = []; clB = [];
-      var mobile = w < 760, i;
-      var SPH = mobile ? 360 : 780, golden = Math.PI * (3 - Math.sqrt(5));
-      for (i = 0; i < SPH; i++) {
-        var ly = 1 - i / (SPH - 1) * 2, rr = Math.sqrt(Math.max(0, 1 - ly * ly)), aa = golden * i;
-        targets.push({ x: Math.cos(aa) * rr, y: ly, z: Math.sin(aa) * rr, a0: 0.12, a1: 0.55 });
+      nodes = []; edges = []; targets = [];
+      var mobile = w < 760, i, k;
+      var counts = mobile ? [22, 15, 9, 5, 2, 1] : [34, 24, 16, 10, 5, 1];
+      var L = counts.length, golden = Math.PI * (3 - Math.sqrt(5)), layerStart = [];
+      for (var li = 0; li < L; li++) {
+        layerStart[li] = nodes.length;
+        var z = -1.15 + 2.3 * li / (L - 1);
+        var rad = 1.12 - 1.0 * (li / (L - 1));        // funnel: wide inputs → tight core
+        var nc = counts[li];
+        for (k = 0; k < nc; k++) {
+          var ang = golden * k + li * 0.7, rr = rad * Math.sqrt((k + 0.5) / nc);
+          nodes.push({ x: Math.cos(ang) * rr, y: Math.sin(ang) * rr, z: z, last: li === L - 1 });
+        }
       }
-      var R1 = mobile ? 60 : 100, R2 = mobile ? 72 : 120, pt;
-      for (i = 0; i < R1; i++) { pt = ringPoint(1.5, 0.55, i / R1 * 6.2832); pt.a0 = 0.08; pt.a1 = 0.4; targets.push(pt); }
-      for (i = 0; i < R2; i++) { pt = ringPoint(2.05, -0.62, i / R2 * 6.2832); pt.a0 = 0.08; pt.a1 = 0.4; targets.push(pt); }
-      for (i = 0; i < 18; i++) clA.push({ x: rnd(-.12, .12), y: rnd(-.12, .12), z: rnd(-.12, .12) });
-      for (i = 0; i < 18; i++) clB.push({ x: rnd(-.1, .1), y: rnd(-.1, .1), z: rnd(-.1, .1) });
-      BASE = targets.length + clA.length + clB.length;
+      // edges: each node branches to its 2 nearest in the next layer
+      for (li = 0; li < L - 1; li++) {
+        var a0 = layerStart[li], a1 = layerStart[li + 1], b1 = (li + 2 < L ? layerStart[li + 2] : nodes.length);
+        for (var ai = a0; ai < a1; ai++) {
+          var best = [];
+          for (var bi = a1; bi < b1; bi++) {
+            var dx = nodes[ai].x - nodes[bi].x, dy = nodes[ai].y - nodes[bi].y;
+            best.push([dx * dx + dy * dy, bi]);
+          }
+          best.sort(function (p, q) { return p[0] - q[0]; });
+          for (var e = 0; e < Math.min(2, best.length); e++) edges.push([ai, best[e][1]]);
+        }
+      }
+      // particle targets: the nodes themselves + points strung along every edge
+      for (i = 0; i < nodes.length; i++) {
+        var nn = nodes[i];
+        targets.push({ x: nn.x, y: nn.y, z: nn.z, a0: 0.28, a1: 0.55, node: 1, col: nn.last ? CORE : null });
+      }
+      var SEG = mobile ? 3 : 4;
+      for (i = 0; i < edges.length; i++) {
+        var A = nodes[edges[i][0]], B = nodes[edges[i][1]];
+        for (var sg = 1; sg <= SEG; sg++) {
+          var tt = sg / (SEG + 1);
+          targets.push({ x: A.x + (B.x - A.x) * tt, y: A.y + (B.y - A.y) * tt, z: A.z + (B.z - A.z) * tt, a0: 0.05, a1: 0.22, node: 0, col: null });
+        }
+      }
+      BASE = targets.length;
     }
     function build() {
       var rect = canvas.getBoundingClientRect(); w = rect.width; h = rect.height;
       if (!w || !h) return;
       canvas.width = Math.round(w * DPR); canvas.height = Math.round(h * DPR);
       ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-      cx = w * 0.5; cy = h * 0.46; R = 0.16 * Math.min(w * 0.9, h);
+      cx = w * 0.5; cy = h * 0.46; R = 0.20 * Math.min(w * 0.9, h);
       buildTargets();
-      var dust = Math.round(w * h / 16000), total = BASE + dust, prev = parts, i;
+      var dust = Math.round(w * h / 17000), total = BASE + dust, prev = parts, i;
       parts = [];
       for (i = 0; i < total; i++) {
         var p = prev[i];
-        var ang = Math.random() * 6.2832, rad = R * (1.8 + Math.random() * 2.4);
+        var ang = Math.random() * 6.2832, rad = R * (1.7 + Math.random() * 2.3);
         parts.push({ x: p ? p.x : rnd(0, w), y: p ? p.y : rnd(0, h), vx: 0, vy: 0,
                      ph: Math.random() * 6.2832, bx: rnd(0, w), by: rnd(0, h),
                      sax: cx + Math.cos(ang) * rad, say: cy + Math.sin(ang) * rad * 0.85,
@@ -196,29 +220,41 @@
       return [cx + rx * R, cy - sy * R, dz];
     }
     var ci = 0;
-    function place(sx, sy, alpha, size) {
+    function place(sx, sy, alpha, size, col) {
       var a = parts[ci++]; if (!a) return;
-      var gp = smooth(asm * 1.32 - a.o);            // per-particle assembled fraction (staggered)
-      var txx = a.sax + (sx - a.sax) * gp;          // blend scatter-halo → figure point
-      var txy = a.say + (sy - a.say) * gp;
+      var gp = smooth(asm * 1.32 - a.o);
+      var txx = a.sax + (sx - a.sax) * gp, txy = a.say + (sy - a.say) * gp;
       var ox = (txx - a.x) * 0.014, oy = (txy - a.y) * 0.014;
       var ux = a.x - mxp, uy = a.y - myp, d2 = ux * ux + uy * uy;
       if (d2 < 16900) { var d = Math.sqrt(d2) || 1, f = (130 - d) / 130 * 4.0; ox += ux / d * f; oy += uy / d * f; }
       a.vx = (a.vx + ox) * 0.91; a.vy = (a.vy + oy) * 0.91; a.x += a.vx; a.y += a.vy;
-      ctx.globalAlpha = alpha * (0.5 + 0.5 * gp);   // dimmer while scattered
+      if (col) { ctx.fillStyle = col; } else if (ctx.fillStyle !== '#ece7d8') ctx.fillStyle = '#ece7d8';
+      ctx.globalAlpha = alpha * (0.45 + 0.55 * gp);
       ctx.fillRect(a.x, a.y, size, size);
     }
     function draw(t) {
       if (!built) return;
       ctx.clearRect(0, 0, w, h);
-      if (!reduce) { rotY += 0.0042; rot1 += 0.01; rot2 -= 0.0075; asm = asmAt(t); }
+      if (!reduce) { rotY += 0.0038; asm = asmAt(t); }
+      var gAll = smooth(asm), i, P, dep;
+      // connections (branches) — faint, fade with the assembly
+      if (gAll > 0.04) {
+        ctx.lineWidth = 1;
+        for (i = 0; i < edges.length; i++) {
+          var PA = project(nodes[edges[i][0]]), PB = project(nodes[edges[i][1]]);
+          dep = ((PA[2] + PB[2]) * 0.5 / 1.4 + 1) / 2;
+          ctx.strokeStyle = 'rgba(236,231,216,' + ((0.05 + dep * 0.10) * gAll).toFixed(3) + ')';
+          ctx.beginPath(); ctx.moveTo(PA[0], PA[1]); ctx.lineTo(PB[0], PB[1]); ctx.stroke();
+        }
+      }
+      // particles assembling onto nodes + edge strands
+      ctx.fillStyle = '#ece7d8'; ci = 0;
+      for (i = 0; i < targets.length; i++) {
+        var T = targets[i]; P = project(T); dep = (P[2] / 1.4 + 1) / 2;
+        place(P[0], P[1], T.a0 + T.a1 * dep, T.node ? (T.col ? 3 : 2) : 1.2, T.col);
+      }
+      // ambient dust
       ctx.fillStyle = '#ece7d8';
-      ci = 0; var i, P, dep;
-      for (i = 0; i < targets.length; i++) { P = project(targets[i]); dep = (P[2] / 2.1 + 1) / 2; place(P[0], P[1], targets[i].a0 + targets[i].a1 * dep, P[2] > 0 ? 1.6 : 1); }
-      var oA = ringPoint(1.5, 0.55, rot1);
-      for (i = 0; i < clA.length; i++) { P = project({ x: oA.x + clA[i].x, y: oA.y + clA[i].y, z: oA.z + clA[i].z }); place(P[0], P[1], 0.95, 1.8); }
-      var oB = ringPoint(2.05, -0.62, rot2);
-      for (i = 0; i < clB.length; i++) { P = project({ x: oB.x + clB[i].x, y: oB.y + clB[i].y, z: oB.z + clB[i].z }); place(P[0], P[1], 0.95, 1.8); }
       for (i = ci; i < parts.length; i++) {
         var r = parts[i];
         var lx = r.bx + 40 * Math.cos(0.00026 * t + r.ph), ly = r.by + 40 * Math.sin(0.00032 * t + r.ph);
