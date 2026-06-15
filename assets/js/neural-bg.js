@@ -99,7 +99,7 @@
     geom.setAttribute('position', new THREE.BufferAttribute(posArr, 3));
     geom.setAttribute('acolor', new THREE.BufferAttribute(colors, 3));
     var sizeArr = new Float32Array(N);
-    for (i = 0; i < N; i++) sizeArr[i] = isNode[i] ? (nodes[i] && nodes[i][3] === L - 1 ? 0.075 : 0.05) : 0.022;
+    for (i = 0; i < N; i++) sizeArr[i] = isNode[i] ? (nodes[i] && nodes[i][3] === L - 1 ? 0.052 : 0.034) : 0.013;
     geom.setAttribute('asize', new THREE.BufferAttribute(sizeArr, 1));
 
     var FOV = 55;
@@ -109,10 +109,11 @@
       vertexShader:
         'attribute vec3 acolor; attribute float asize; varying vec3 vC; uniform float uSize;' +
         ' void main(){ vC=acolor; vec4 mv=modelViewMatrix*vec4(position,1.0);' +
-        ' float ps=asize*uSize/max(0.15,-mv.z); gl_PointSize=clamp(ps,1.0,70.0); gl_Position=projectionMatrix*mv; }',
+        ' float ps=asize*uSize/max(0.15,-mv.z); gl_PointSize=clamp(ps,0.7,30.0); gl_Position=projectionMatrix*mv; }',
       fragmentShader:
         'varying vec3 vC; uniform float uOp; void main(){ vec2 d=gl_PointCoord-vec2(0.5); float r=dot(d,d);' +
-        ' if(r>0.25) discard; float a=smoothstep(0.25,0.0,r); gl_FragColor=vec4(vC, a*0.85*uOp); }'
+        ' if(r>0.25) discard; float a=smoothstep(0.25,0.0,r); a=a*a; float core=smoothstep(0.04,0.0,r);' +
+        ' vec3 col=mix(vC,vec3(1.0),core*0.6); gl_FragColor=vec4(col, (a*0.62+core*0.5)*uOp); }'
     });
     var points = new THREE.Points(geom, mat);
     scene.add(points);
@@ -195,13 +196,15 @@
       geom.attributes.position.needsUpdate = true;
       // camera flies forward with overall scroll; gentle constant rotation
       rotY += 0.0009;
-      points.rotation.y = rotY + (mAct ? mx * 0.12 : 0);
-      camera.position.z = 6.0 - scrollFrac * 2.6;
+      var baseRot = rotY * 0.4 + scrollFrac * 4.6;          // scroll orbits the whole system
+      points.rotation.y = baseRot + (mAct ? mx * 0.12 : 0);
+      points.rotation.x = scrollFrac * 0.5;                 // tip the view as we fly around
+      camera.position.z = 6.0 - scrollFrac * 2.4;
       camera.position.x = (mAct ? mx * 0.18 : 0);
       camera.lookAt(0, 0, 0);
       // orbit modules: slowly revolve around the core, project to screen, fade out past hero
       if (chips.length) {
-        var heroVis = 1 - smooth(stageF / 0.8), ot = t * 0.00006, vw = window.innerWidth, vh = window.innerHeight, cP = points.position;
+        var heroVis = 1 - smooth(stageF / 0.8), ot = t * 0.00006 + scrollFrac * 3.2, vw = window.innerWidth, vh = window.innerHeight, cP = points.position;
         for (var ci = 0; ci < chips.length; ci++) {
           var m = chips[ci], aa2 = m.a + ot;
           tmp.set(cP.x + Math.cos(aa2) * m.r, cP.y + Math.sin(aa2) * m.r * m.e, cP.z + Math.sin(aa2) * m.r * 0.5);
@@ -211,7 +214,7 @@
           el.style.opacity = (heroVis * (0.32 + 0.68 * dep)).toFixed(2);
           el.style.zIndex = String(100 + Math.round(dep * 40));
         }
-        for (var rri = 0; rri < orbitRings.length; rri++) { orbitRings[rri].position.copy(cP); orbitRings[rri].rotation.y = rotY; orbitRings[rri].material.opacity = 0.1 * heroVis; }
+        for (var rri = 0; rri < orbitRings.length; rri++) { orbitRings[rri].position.copy(cP); orbitRings[rri].rotation.y = baseRot; orbitRings[rri].rotation.x = scrollFrac * 0.5; orbitRings[rri].material.opacity = 0.1 * heroVis; }
       }
       renderer.render(scene, camera);
       if (!reduce) raf = requestAnimationFrame(frame);
