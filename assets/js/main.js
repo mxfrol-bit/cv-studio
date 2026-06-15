@@ -154,7 +154,7 @@
     function buildTargets() {
       nodes = []; edges = []; targets = [];
       var mobile = w < 760, i, k;
-      var counts = mobile ? [22, 15, 9, 5, 2, 1] : [34, 24, 16, 10, 5, 1];
+      var counts = mobile ? [30, 22, 15, 9, 5, 2] : [58, 44, 32, 21, 12, 4];
       var L = counts.length, golden = Math.PI * (3 - Math.sqrt(5)), layerStart = [];
       for (var li = 0; li < L; li++) {
         layerStart[li] = nodes.length;
@@ -176,20 +176,20 @@
             best.push([dx * dx + dy * dy, bi]);
           }
           best.sort(function (p, q) { return p[0] - q[0]; });
-          for (var e = 0; e < Math.min(2, best.length); e++) edges.push([ai, best[e][1]]);
+          for (var e = 0; e < Math.min(3, best.length); e++) edges.push([ai, best[e][1]]);
         }
       }
       // particle targets: the nodes themselves + points strung along every edge
       for (i = 0; i < nodes.length; i++) {
         var nn = nodes[i];
-        targets.push({ x: nn.x, y: nn.y, z: nn.z, a0: 0.28, a1: 0.55, node: 1, col: nn.last ? CORE : null });
+        targets.push({ x: nn.x, y: nn.y, z: nn.z, a0: 0.36, a1: 0.6, node: 1, col: nn.last ? CORE : null });
       }
       var SEG = mobile ? 3 : 4;
       for (i = 0; i < edges.length; i++) {
         var A = nodes[edges[i][0]], B = nodes[edges[i][1]];
         for (var sg = 1; sg <= SEG; sg++) {
           var tt = sg / (SEG + 1);
-          targets.push({ x: A.x + (B.x - A.x) * tt, y: A.y + (B.y - A.y) * tt, z: A.z + (B.z - A.z) * tt, a0: 0.05, a1: 0.22, node: 0, col: null });
+          targets.push({ x: A.x + (B.x - A.x) * tt, y: A.y + (B.y - A.y) * tt, z: A.z + (B.z - A.z) * tt, a0: 0.07, a1: 0.27, node: 0, col: null });
         }
       }
       BASE = targets.length;
@@ -199,7 +199,7 @@
       if (!w || !h) return;
       canvas.width = Math.round(w * DPR); canvas.height = Math.round(h * DPR);
       ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-      cx = w * 0.5; cy = h * 0.46; R = 0.20 * Math.min(w * 0.9, h);
+      cx = w * (w < 760 ? 0.5 : 0.6); cy = h * 0.44; R = 0.30 * Math.min(w * 0.9, h);
       buildTargets();
       var dust = Math.round(w * h / 17000), total = BASE + dust, prev = parts, i;
       parts = [];
@@ -243,7 +243,7 @@
         for (i = 0; i < edges.length; i++) {
           var PA = project(nodes[edges[i][0]]), PB = project(nodes[edges[i][1]]);
           dep = ((PA[2] + PB[2]) * 0.5 / 1.4 + 1) / 2;
-          ctx.strokeStyle = 'rgba(236,231,216,' + ((0.05 + dep * 0.10) * gAll).toFixed(3) + ')';
+          ctx.strokeStyle = 'rgba(236,231,216,' + ((0.07 + dep * 0.14) * gAll).toFixed(3) + ')';
           ctx.beginPath(); ctx.moveTo(PA[0], PA[1]); ctx.lineTo(PB[0], PB[1]); ctx.stroke();
         }
       }
@@ -251,7 +251,7 @@
       ctx.fillStyle = '#ece7d8'; ci = 0;
       for (i = 0; i < targets.length; i++) {
         var T = targets[i]; P = project(T); dep = (P[2] / 1.4 + 1) / 2;
-        place(P[0], P[1], T.a0 + T.a1 * dep, T.node ? (T.col ? 3 : 2) : 1.2, T.col);
+        place(P[0], P[1], T.a0 + T.a1 * dep, T.node ? (T.col ? 3.8 : 2.4) : 1.3, T.col);
       }
       // ambient dust
       ctx.fillStyle = '#ece7d8';
