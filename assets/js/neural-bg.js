@@ -196,12 +196,22 @@
       geom.attributes.position.needsUpdate = true;
       // camera flies forward with overall scroll; gentle constant rotation
       rotY += 0.0009;
-      var baseRot = rotY * 0.4 + scrollFrac * 4.6;          // scroll orbits the whole system
+      var sf = scrollFrac, isWide = window.innerWidth >= 760;
+      // recentre the core from the right (hero) toward centre as we dive in
+      points.position.x = isWide ? 1.7 * (1 - smooth((sf - 0.12) / 0.26)) : 0;
+      // orbit during the first third, then hold so we fly straight through the neurons
+      var orbitAmt = smooth(sf / 0.33);
+      var baseRot = rotY * 0.4 + orbitAmt * 3.0;
       points.rotation.y = baseRot + (mAct ? mx * 0.12 : 0);
-      points.rotation.x = scrollFrac * 0.5;                 // tip the view as we fly around
-      camera.position.z = 6.0 - scrollFrac * 2.4;
+      points.rotation.x = orbitAmt * 0.42;
+      // camera path: orbit (slight zoom) → approach → fly through the network
+      var camZ;
+      if (sf < 0.28) camZ = 6.0 - smooth(sf / 0.28) * 1.3;
+      else if (sf < 0.5) camZ = 4.7 - smooth((sf - 0.28) / 0.22) * 3.2;
+      else camZ = 1.5 - smooth((sf - 0.5) / 0.5) * 4.3;
       camera.position.x = (mAct ? mx * 0.18 : 0);
-      camera.lookAt(0, 0, 0);
+      camera.position.z = camZ;
+      camera.lookAt(camera.position.x, 0, camZ - 5);
       // orbit modules: slowly revolve around the core, project to screen, fade out past hero
       if (chips.length) {
         var heroVis = 1 - smooth(stageF / 0.8), ot = t * 0.00006 + scrollFrac * 3.2, vw = window.innerWidth, vh = window.innerHeight, cP = points.position;
@@ -214,7 +224,7 @@
           el.style.opacity = (heroVis * (0.32 + 0.68 * dep)).toFixed(2);
           el.style.zIndex = String(100 + Math.round(dep * 40));
         }
-        for (var rri = 0; rri < orbitRings.length; rri++) { orbitRings[rri].position.copy(cP); orbitRings[rri].rotation.y = baseRot; orbitRings[rri].rotation.x = scrollFrac * 0.5; orbitRings[rri].material.opacity = 0.1 * heroVis; }
+        for (var rri = 0; rri < orbitRings.length; rri++) { orbitRings[rri].position.copy(cP); orbitRings[rri].rotation.y = baseRot; orbitRings[rri].rotation.x = orbitAmt * 0.42; orbitRings[rri].material.opacity = 0.1 * heroVis; }
       }
       renderer.render(scene, camera);
       if (!reduce) raf = requestAnimationFrame(frame);
