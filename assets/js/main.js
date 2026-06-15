@@ -141,6 +141,16 @@
     var targets = [], parts = [], BASE = 0, clA = [], clB = [];
 
     function rnd(a, b) { return a + Math.random() * (b - a); }
+    function smooth(x) { x = x < 0 ? 0 : x > 1 ? 1 : x; return x * x * (3 - 2 * x); }
+    // assemble/disassemble auto-cycle: 1 = figure assembled, 0 = scattered cloud
+    var asm = 1, ASM_PERIOD = 11000;
+    function asmAt(tm) {
+      var p = tm % ASM_PERIOD;
+      if (p < 4200) return 1;                          // hold the figure
+      p -= 4200; if (p < 2600) return 1 - smooth(p / 2600); // disperse to cloud
+      p -= 2600; if (p < 1600) return 0;               // hold the cloud
+      p -= 1600; return smooth(p / 2600);              // reassemble
+    }
     function ringPoint(rad, lat, ang) {
       var rx = Math.cos(ang) * rad, ry = Math.sin(ang) * rad, ca = Math.cos(lat);
       return { x: rx, y: -ry * Math.sin(lat), z: ry * ca };
@@ -171,8 +181,11 @@
       parts = [];
       for (i = 0; i < total; i++) {
         var p = prev[i];
+        var ang = Math.random() * 6.2832, rad = R * (1.8 + Math.random() * 2.4);
         parts.push({ x: p ? p.x : rnd(0, w), y: p ? p.y : rnd(0, h), vx: 0, vy: 0,
-                     ph: Math.random() * 6.2832, bx: rnd(0, w), by: rnd(0, h) });
+                     ph: Math.random() * 6.2832, bx: rnd(0, w), by: rnd(0, h),
+                     sax: cx + Math.cos(ang) * rad, say: cy + Math.sin(ang) * rad * 0.85,
+                     o: Math.random() * 0.32 });
       }
       built = true;
     }
@@ -185,16 +198,20 @@
     var ci = 0;
     function place(sx, sy, alpha, size) {
       var a = parts[ci++]; if (!a) return;
-      var ox = (sx - a.x) * 0.014, oy = (sy - a.y) * 0.014;
+      var gp = smooth(asm * 1.32 - a.o);            // per-particle assembled fraction (staggered)
+      var txx = a.sax + (sx - a.sax) * gp;          // blend scatter-halo → figure point
+      var txy = a.say + (sy - a.say) * gp;
+      var ox = (txx - a.x) * 0.014, oy = (txy - a.y) * 0.014;
       var ux = a.x - mxp, uy = a.y - myp, d2 = ux * ux + uy * uy;
       if (d2 < 16900) { var d = Math.sqrt(d2) || 1, f = (130 - d) / 130 * 4.0; ox += ux / d * f; oy += uy / d * f; }
       a.vx = (a.vx + ox) * 0.91; a.vy = (a.vy + oy) * 0.91; a.x += a.vx; a.y += a.vy;
-      ctx.globalAlpha = alpha; ctx.fillRect(a.x, a.y, size, size);
+      ctx.globalAlpha = alpha * (0.5 + 0.5 * gp);   // dimmer while scattered
+      ctx.fillRect(a.x, a.y, size, size);
     }
     function draw(t) {
       if (!built) return;
       ctx.clearRect(0, 0, w, h);
-      if (!reduce) { rotY += 0.0042; rot1 += 0.01; rot2 -= 0.0075; }
+      if (!reduce) { rotY += 0.0042; rot1 += 0.01; rot2 -= 0.0075; asm = asmAt(t); }
       ctx.fillStyle = '#ece7d8';
       ci = 0; var i, P, dep;
       for (i = 0; i < targets.length; i++) { P = project(targets[i]); dep = (P[2] / 2.1 + 1) / 2; place(P[0], P[1], targets[i].a0 + targets[i].a1 * dep, P[2] > 0 ? 1.6 : 1); }
