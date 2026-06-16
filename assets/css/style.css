@@ -440,3 +440,58 @@ body.nav-open{overflow:hidden}
 .orbit-chip i{width:6px;height:6px;border-radius:50%;background:#6AE8FF;box-shadow:0 0 8px rgba(106,232,255,.9);flex:none}
 @media (max-width:760px){.orbit-modules{display:none}}
 @media (prefers-reduced-motion:reduce){.orbit-modules{display:none}}
+
+/* ===========================================================
+   Neural fabric — blocks read as nodes wired into the network
+   =========================================================== */
+@keyframes synPulse{0%,100%{opacity:.4;transform:translateX(-50%) scale(1)}50%{opacity:1;transform:translateX(-50%) scale(1.5)}}
+@keyframes synPulseR{0%,100%{opacity:.4;transform:scale(1)}50%{opacity:1;transform:scale(1.5)}}
+@keyframes synFlow{0%{background-position:-60px 0}100%{background-position:140% 0}}
+
+/* let the live network glow through content surfaces */
+.feat,.step{background:linear-gradient(135deg,rgba(255,255,255,.045),rgba(255,255,255,.015));border-color:rgba(140,180,255,.16)}
+.feat:hover{border-color:rgba(255,142,77,.34);background:linear-gradient(135deg,rgba(255,255,255,.06),rgba(255,255,255,.02))}
+
+/* — Process: the four steps become one neuron layer — */
+.steps{position:relative;overflow:visible}
+.steps::before{content:"";position:absolute;top:-1px;left:6%;right:6%;height:1px;z-index:0;pointer-events:none;
+  background:linear-gradient(90deg,transparent,rgba(255,142,77,.16) 12%,rgba(140,180,255,.30) 50%,rgba(255,142,77,.16) 88%,transparent);
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent)}
+.steps::after{content:"";position:absolute;top:-1px;left:6%;width:60px;height:1px;z-index:1;pointer-events:none;
+  background:linear-gradient(90deg,transparent,rgba(180,220,255,.95),transparent);filter:blur(.3px);animation:synFlow 5.5s linear infinite}
+.step{position:relative;z-index:1;overflow:visible}
+.step::after{content:"";position:absolute;top:-5px;left:28px;width:9px;height:9px;border-radius:50%;z-index:2;
+  background:radial-gradient(circle,#fff 0,var(--accent-2) 55%,rgba(255,142,77,0) 100%);
+  box-shadow:0 0 12px 2px rgba(255,142,77,.55);animation:synPulseR 3.4s ease-in-out infinite}
+.step:nth-child(2)::after{animation-delay:.5s}
+.step:nth-child(3)::after{animation-delay:1s}
+.step:nth-child(4)::after{animation-delay:1.5s}
+
+/* — Cases: a vertical chain of neurons strung on a glowing axon — */
+.cases-grid{position:relative}
+.cases-grid::before{content:"";position:absolute;left:50%;top:0;bottom:0;width:1px;transform:translateX(-50%);z-index:0;pointer-events:none;
+  background:linear-gradient(180deg,transparent,rgba(140,180,255,.18) 8%,rgba(140,180,255,.18) 92%,transparent);
+  -webkit-mask-image:linear-gradient(180deg,transparent,#000 6%,#000 94%,transparent);mask-image:linear-gradient(180deg,transparent,#000 6%,#000 94%,transparent)}
+.case{overflow:visible}
+.case::before{content:"";position:absolute;left:50%;bottom:-4px;width:9px;height:9px;border-radius:50%;z-index:3;pointer-events:none;
+  background:radial-gradient(circle,#fff 0,var(--accent-2) 55%,rgba(255,142,77,0) 100%);
+  box-shadow:0 0 18px 4px rgba(255,142,77,.45);animation:synPulse 3.8s ease-in-out infinite}
+.case:nth-child(2)::before{animation-delay:.7s}
+.case:nth-child(3)::before{animation-delay:1.4s}
+.case:nth-child(4)::before{animation-delay:2.1s}
+.case__body{position:relative}
+.case__body::after{content:"";position:absolute;top:6px;width:54px;height:1px;z-index:1;pointer-events:none;
+  background:linear-gradient(90deg,rgba(140,180,255,.5),transparent)}
+.case:nth-child(odd) .case__body::after{left:-64px;background:linear-gradient(90deg,transparent,rgba(140,180,255,.5))}
+.case:nth-child(even) .case__body::after{right:-64px}
+@media (max-width:860px){.cases-grid::before,.case__body::after{display:none}}
+
+/* — Section heads: a synapse node anchors each block to the net — */
+.section__head .eyebrow,.dark .eyebrow{position:relative}
+.section__head .eyebrow::after{content:"";position:absolute;left:-13px;top:50%;width:7px;height:7px;border-radius:50%;transform:translateY(-50%);
+  background:radial-gradient(circle,#fff 0,var(--accent-2) 60%,rgba(255,142,77,0) 100%);box-shadow:0 0 10px 2px rgba(255,142,77,.5);animation:synPulseR 4s ease-in-out infinite}
+
+@media (prefers-reduced-motion:reduce){
+  .steps::after{display:none}
+  .step::after,.case::before,.section__head .eyebrow::after{animation:none}
+}
